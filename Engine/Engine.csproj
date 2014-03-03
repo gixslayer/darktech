@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{58456D6E-2B42-4E36-9367-2B08B21B3B24}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DarkTech.Engine</RootNamespace>
+    <AssemblyName>Engine</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Component.cs" />
+    <Compile Include="ComponentSet.cs" />
+    <Compile Include="Math\Vector2f.cs" />
+    <Compile Include="Math\Vector3f.cs" />
+    <Compile Include="Math\Vector4f.cs" />
+    <Compile Include="Resources\IResource.cs" />
+    <Compile Include="Resources\ResourceCache.cs" />
+    <Compile Include="Resources\ResourceLoader.cs" />
+    <Compile Include="Scripting\CachedCvar.cs" />
+    <Compile Include="Scripting\CommandBuffer.cs" />
+    <Compile Include="Scripting\CvarBool.cs" />
+    <Compile Include="Engine.Main.cs" />
+    <Compile Include="Engine.Printing.cs" />
+    <Compile Include="Entity.cs" />
+    <Compile Include="EntityGroup.cs" />
+    <Compile Include="EntityList.cs" />
+    <Compile Include="NamedEntity.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\BBS\BBSFile.cs" />
+    <Compile Include="Resources\BBS\BBSFlags.cs" />
+    <Compile Include="Resources\BBS\Block.cs" />
+    <Compile Include="Resources\BBS\BlockArray.cs" />
+    <Compile Include="Resources\BBS\BlockData.cs" />
+    <Compile Include="Resources\BBS\BlockBool.cs" />
+    <Compile Include="Resources\BBS\BlockByte.cs" />
+    <Compile Include="Resources\BBS\BlockChar.cs" />
+    <Compile Include="Resources\BBS\BlockDouble.cs" />
+    <Compile Include="Resources\BBS\BlockEnd.cs" />
+    <Compile Include="Resources\BBS\BlockFloat.cs" />
+    <Compile Include="Resources\BBS\BlockInt.cs" />
+    <Compile Include="Resources\BBS\BlockList.cs" />
+    <Compile Include="Resources\BBS\BlockLong.cs" />
+    <Compile Include="Resources\BBS\BlockNode.cs" />
+    <Compile Include="Resources\BBS\BlockSByte.cs" />
+    <Compile Include="Resources\BBS\BlockShort.cs" />
+    <Compile Include="Resources\BBS\BlockString.cs" />
+    <Compile Include="Resources\BBS\BlockStringEx.cs" />
+    <Compile Include="Resources\BBS\BlockType.cs" />
+    <Compile Include="Resources\BBS\BlockUInt.cs" />
+    <Compile Include="Resources\BBS\BlockULong.cs" />
+    <Compile Include="Resources\BBS\BlockUShort.cs" />
+    <Compile Include="Resources\File.cs" />
+    <Compile Include="Resources\FileAccess.cs" />
+    <Compile Include="Resources\FileInfo.cs" />
+    <Compile Include="Resources\FileMode.cs" />
+    <Compile Include="Resources\FileSystem.cs" />
+    <Compile Include="Resources\FileSystemWindows.cs" />
+    <Compile Include="Resources\PAK\PakEntry.cs" />
+    <Compile Include="Resources\PAK\PakEntryFlags.cs" />
+    <Compile Include="Resources\PAK\PakFile.cs" />
+    <Compile Include="Resources\PAK\PakStream.cs" />
+    <Compile Include="Resources\ResourceManager.cs" />
+    <Compile Include="SceneGraph.cs" />
+    <Compile Include="Scripting\Command.cs" />
+    <Compile Include="Scripting\Cvar.cs" />
+    <Compile Include="Scripting\CvarBase.cs" />
+    <Compile Include="Scripting\CvarBounded.cs" />
+    <Compile Include="Scripting\CvarEnum.cs" />
+    <Compile Include="Scripting\CvarFloat.cs" />
+    <Compile Include="Scripting\CvarInt.cs" />
+    <Compile Include="Scripting\CvarString.cs" />
+    <Compile Include="Scripting\CvarFlag.cs" />
+    <Compile Include="Scripting\CvarVector2f.cs" />
+    <Compile Include="Scripting\CvarVector3f.cs" />
+    <Compile Include="Scripting\CvarVector4f.cs" />
+    <Compile Include="Scripting\ArgList.cs" />
+    <Compile Include="Scripting\ExecuteMode.cs" />
+    <Compile Include="Scripting\ScriptingInterface.cs" />
+    <Compile Include="Scripting\Arg.cs" />
+    <Compile Include="Scripting\ArgType.cs" />
+    <Compile Include="Utils\ByteConverter.cs" />
+    <Compile Include="Utils\Memory.cs" />
+    <Compile Include="Utils\StreamExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
