@@ -1,5 +1,7 @@
 ﻿using System.IO;
 
+using DarkTech.Engine.Utils;
+
 namespace DarkTech.Engine.Resources.BBS
 {
     public sealed class BlockSByte : BlockData<sbyte>
@@ -7,27 +9,14 @@ namespace DarkTech.Engine.Resources.BBS
         public BlockSByte() : this(0) {}
         public BlockSByte(sbyte defaultValue) : base(BlockType.SByte, defaultValue) {}
 
-        public override bool Serialize(Stream stream)
+        public override void Serialize(Stream stream)
         {
-            stream.WriteByte((byte)Value);
-
-            return true;
+            stream.WriteSByte(Value);
         }
 
-        public override bool Deserialize(Stream stream)
+        public override void Deserialize(Stream stream)
         {
-            int iByte = stream.ReadByte();
-
-            if (iByte == -1)
-            {
-                Block.ErrorMessage = "Unexpected end of stream";
-
-                return false;
-            }
-
-            Value = (sbyte)iByte;
-
-            return true;
+            Value = stream.ReadSByte();
         }
     }
 }

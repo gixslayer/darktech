@@ -4,16 +4,12 @@ namespace DarkTech.Engine.Resources.BBS
 {
     public sealed class BlockEnd : Block
     {
+        public static readonly BlockEnd INSTANCE = new BlockEnd();
+
         public BlockEnd() : base(BlockType.End) { }
 
-        public override bool Serialize(Stream stream)
-        {
-            return true;
-        }
+        public override void Serialize(Stream stream) { }
 
-        public override bool Deserialize(Stream stream)
-        {
-            return true;
-        }
+        public override void Deserialize(Stream stream) { }
     }
 }

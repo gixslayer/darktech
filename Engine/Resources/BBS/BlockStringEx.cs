@@ -20,70 +20,34 @@ namespace DarkTech.Engine.Resources.BBS
             this.Encoding = encoding;
         }
 
-        public override bool Serialize(Stream stream)
+        public override void Serialize(Stream stream)
         {
             byte encoding = EncodingToByte(Encoding);
 
             if (encoding == ENCODING_UNKNOWN)
-            {
-                Block.ErrorMessage = "Unknown encoding type";
-
-                return false;
-            }
+                throw new BBSException("Unknown encoding");
 
             byte[] buffer = Encoding.GetBytes(Value);
-            byte[] lengthBuffer = ByteConverter.GetBytes((ushort)buffer.Length);
 
             stream.WriteByte(encoding);
-            stream.Write(lengthBuffer, 0, lengthBuffer.Length);
-            stream.Write(buffer, 0, buffer.Length);
-
-            return true;
+            stream.WriteUShort((ushort)buffer.Length);
+            stream.Write(buffer);
         }
 
-        public override bool Deserialize(Stream stream)
+        public override void Deserialize(Stream stream)
         {
-            int encodingByte = stream.ReadByte();
-
-            if (encodingByte == -1)
-            {
-                Block.ErrorMessage = "Unexpected end of stream";
-
-                return false;
-            }
-
-            Encoding = ByteToEncoding((byte)encodingByte);
+            Encoding = ByteToEncoding(stream.ReadByteEx());
 
             if (Encoding == null)
-            {
-                Block.ErrorMessage = "Unknown encoding type";
+                throw new BBSException("Unknown encoding");
 
-                return false;
-            }
-
-            byte[] lengthBuffer = new byte[2];
-
-            if (stream.Read(lengthBuffer, 0, lengthBuffer.Length) != lengthBuffer.Length)
-            {
-                Block.ErrorMessage = "Unexpected end of stream";
-
-                return false;
-            }
-
-            ushort length = ByteConverter.ToUShort(lengthBuffer, 0);
-
+            ushort length = stream.ReadUShort();
             byte[] buffer = new byte[length];
 
-            if (stream.Read(buffer, 0, length) != length)
-            {
-                Block.ErrorMessage = "Unexpected end of stream";
-
-                return false;
-            }
+            if (!stream.SaveRead(buffer))
+                throw BBSException.UNEXPECTED_EOS;
 
             Value = Encoding.GetString(buffer);
-
-            return true;
         }
 
         // TODO: Fix this ugly code.

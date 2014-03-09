@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using DarkTech.Engine.Resources;
+using DarkTech.Engine.Resources.BBS;
 
 namespace EngineTest
 {
@@ -17,6 +18,10 @@ namespace EngineTest
             manager.RegisterResourceLoader<Resource>(new Loader());
 
             Console.WriteLine(manager.HasResourceLoader<Resource>());
+
+            Block block = Block.CreateFromType(BlockType.String);
+
+            Console.WriteLine(block is BlockString);
 
             Console.WriteLine("DONE");
             Console.Read();

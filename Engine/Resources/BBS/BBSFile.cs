@@ -1,70 +1,47 @@
 ﻿using System.IO;
 
+using DarkTech.Engine.Utils;
+
 namespace DarkTech.Engine.Resources.BBS
 {
     public sealed class BBSFile
     {
-        private delegate bool SaveDelegate(Stream stream);
-        private delegate bool LoadDelegate(Stream stream);
+        private delegate void SaveDelegate(Stream stream);
+        private delegate void LoadDelegate(Stream stream);
 
         public BlockNode Root { get; set; }
         public byte Version { get; set; }
         public BBSFlags Flags { get; set; }
 
-        public bool Save(Stream stream)
+        public void Save(Stream stream)
         {
             stream.WriteByte(Version);
             stream.WriteByte((byte)Flags);
 
             SaveDelegate saveDelegate = GetSaveDelegate(Version);
 
-            if (saveDelegate == null)
-            {
-                Block.ErrorMessage = "Unknown version";
-
-                return false;
-            }
-
-            return saveDelegate(stream);
-
+            saveDelegate(stream);
         }
 
-        public bool Load(Stream stream)
+        public void Load(Stream stream)
         {
-            int iVersion = stream.ReadByte();
-            int iFlags = stream.ReadByte();
-
-            if (iVersion == -1 || iFlags == -1)
-            {
-                Block.ErrorMessage = "Unexpected end of stream";
-
-                return false;
-            }
-
             Root = new BlockNode();
-            Version = (byte)iVersion;
-            Flags = (BBSFlags)iFlags;
+            Version = stream.ReadByteEx();
+            Flags = (BBSFlags)stream.ReadByteEx();
 
             LoadDelegate loadDelegate = GetLoadDelegate(Version);
 
-            if (loadDelegate == null)
-            {
-                Block.ErrorMessage = "Unknown version";
-
-                return false;
-            }
-
-            return loadDelegate(stream);
+            loadDelegate(stream);
         }
 
-        private bool Save_Version0(Stream stream)
+        private void Save_Version0(Stream stream)
         {
-            return Root.Serialize(stream);
+            Root.Serialize(stream);
         }
 
-        private bool Load_Version0(Stream stream)
+        private void Load_Version0(Stream stream)
         {
-            return Root.Deserialize(stream);
+            Root.Deserialize(stream);
         }
 
         private SaveDelegate GetSaveDelegate(byte version)
@@ -74,8 +51,7 @@ namespace DarkTech.Engine.Resources.BBS
                 case 0:
                     return new SaveDelegate(Save_Version0);
                 default:
-                    // Unknown version.
-                    return null;
+                    throw new BBSException("No save delegate for version " + version);
             }
         }
 
@@ -86,8 +62,7 @@ namespace DarkTech.Engine.Resources.BBS
                 case 0:
                     return new LoadDelegate(Load_Version0);
                 default:
-                    // Unknown version.
-                    return null;
+                    throw new BBSException("No load delegate for version " + version);
             }
         }
     }

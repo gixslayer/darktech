@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using System.Text;
 
+using DarkTech.Engine.Utils;
+
 namespace DarkTech.Engine.Resources.BBS
 {
     public sealed class BlockString : BlockData<string>
@@ -8,40 +10,24 @@ namespace DarkTech.Engine.Resources.BBS
         public BlockString() : this(string.Empty) {}
         public BlockString(string defaultValue) : base(BlockType.String, defaultValue) {}
 
-        public override bool Serialize(Stream stream)
+        public override void Serialize(Stream stream)
         {
             byte[] buffer = Encoding.UTF8.GetBytes(Value);
-            int length = buffer.Length > 255 ? 255 : buffer.Length;
+            int length = buffer.Length > byte.MaxValue ? byte.MaxValue : buffer.Length;
 
             stream.WriteByte((byte)length);
             stream.Write(buffer, 0, length);
-
-            return true;
         }
 
-        public override bool Deserialize(Stream stream)
+        public override void Deserialize(Stream stream)
         {
-            int length = stream.ReadByte();
-
-            if (length == -1)
-            {
-                Block.ErrorMessage = "Unexpected end of stream";
-
-                return false;
-            }
-
+            byte length = stream.ReadByteEx();
             byte[] buffer = new byte[length];
 
-            if (stream.Read(buffer, 0, length) != length)
-            {
-                Block.ErrorMessage = "Unexpected end of stream";
-
-                return false;
-            }
+            if (!stream.SaveRead(buffer))
+                throw BBSException.UNEXPECTED_EOS;
 
             Value = Encoding.UTF8.GetString(buffer);
-
-            return true;
         }
     }
 }

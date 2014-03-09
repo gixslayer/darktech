@@ -9,29 +9,14 @@ namespace DarkTech.Engine.Resources.BBS
         public BlockBool() : this(false) {}
         public BlockBool(bool defafultValue) : base(BlockType.Bool, defafultValue) {}
 
-        public override bool Serialize(Stream stream)
+        public override void Serialize(Stream stream)
         {
-            byte[] buffer = ByteConverter.GetBytes(Value);
-
-            stream.Write(buffer, 0, buffer.Length);
-
-            return true;
+            stream.WriteBool(Value);
         }
 
-        public override bool Deserialize(Stream stream)
+        public override void Deserialize(Stream stream)
         {
-            byte[] buffer = new byte[1];
-
-            if (stream.Read(buffer, 0, buffer.Length) != buffer.Length)
-            {
-                Block.ErrorMessage = "Unexpected end of stream";
-
-                return false;
-            }
-
-            Value = ByteConverter.ToBool(buffer, 0);
-
-            return true;
+            Value = stream.ReadBool();
         }
     }
 }

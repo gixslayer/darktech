@@ -5,55 +5,59 @@ using DarkTech.Engine.Utils;
 
 namespace DarkTech.Engine.Resources.BBS
 {
-    public sealed class BlockArray<T> : BlockData<T[]> where T : Block
+    public abstract class BlockArray<T> : BlockData<T[]>
     {
         public int Length { get { return Value.Length; } }
-        public BlockType SubType { get; private set; }
 
-        public BlockArray() : base(BlockType.Array, new T[0]) 
-        {
-            // TODO: Set SubType
-        }
+        public BlockArray(BlockType type) : this(type, 0) { }
+        public BlockArray(BlockType type, int length) : base(type, new T[length]) { }
 
         public T this[int index]
         {
             get
             {
-                if (index < 0 || index >= Value.Length)
+                if (index < 0 || index >= Length)
                     throw new ArgumentOutOfRangeException("index");
 
                 return Value[index];
             }
             set
             {
-                if (index < 0 || index >= Value.Length)
+                if (index < 0 || index >= Length)
                     throw new ArgumentOutOfRangeException("index");
 
                 Value[index] = value;
             }
         }
 
-        public override bool Serialize(Stream stream)
+        protected abstract void SerializeElement(Stream stream, T element);
+        protected abstract T DeserializeElement(Stream stream);
+
+        public override void Serialize(Stream stream)
         {
-            byte[] data = ByteConverter.GetBytes((uint)Length);
+            stream.WriteUInt((uint)Length);
 
-            stream.WriteByte((byte)SubType);
-            stream.Write(data, 0, data.Length);
-
-            foreach (T block in Value)
+            for (int i = 0; i < Length; i++)
             {
-                if (!block.Serialize(stream))
-                {
-                    return false;
-                }
+                SerializeElement(stream, Value[i]);
             }
-
-            return true;
         }
 
-        public override bool Deserialize(Stream stream)
+        public override void Deserialize(Stream stream)
         {
-            throw new System.NotImplementedException();
+            uint length = stream.ReadUInt();
+
+            Value = new T[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                Value[i] = DeserializeElement(stream);
+            }
+        }
+
+        public static implicit operator T[](BlockArray<T> block)
+        {
+            return block.Value;
         }
     }
 }

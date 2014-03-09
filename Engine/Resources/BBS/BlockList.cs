@@ -1,171 +1,134 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 using DarkTech.Engine.Utils;
 
 namespace DarkTech.Engine.Resources.BBS
 {
-    public sealed class BlockList : Block
+    public sealed class BlockList : BlockData<List<Block>>, IList<Block>
     {
-        private List<Block> list;
+        public int Count { get { return Value.Count; } }
+        public bool IsReadOnly { get { return false; } }
 
-        public BlockType ListType { get; private set; }
-        public List<Block> Value { get { return list; } }
-        public int Count { get { return list.Count; } }
-
-        internal BlockList() : this(BlockType.End) { }
-
-        public BlockList(BlockType listType)
-            : base(BlockType.List)
-        {
-            this.list = new List<Block>();
-            this.ListType = listType;
-        }
+        public BlockList() : base(BlockType.List, new List<Block>()) { }
 
         public Block this[int index]
         {
             get 
-            { 
-                return index >= 0 && index < Count ? list[index] : null; 
+            {
+                if (index < 0 || index >= Count)
+                    throw new ArgumentOutOfRangeException("index");
+
+                return Value[index];
             }
             set
             {
-                if (index >= 0 && index < Count && MatchType(value, ListType))
-                {
-                    list[index] = value;
-                }
+                if (index < 0 || index >= Count)
+                    throw new ArgumentOutOfRangeException("index");
+
+                Value[index] = value;
             }
-        }
-
-        public bool Add(Block item)
-        {
-            if (!MatchType(item, ListType))
-            {
-                return false;
-            }
-
-            list.Add(item);
-
-            return true;
-        }
-
-        public bool AddRange(Block[] items)
-        {
-            foreach (Block item in items)
-            {
-                if (!Add(item))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public bool Remove(Block item)
-        {
-            return list.Remove(item);
-        }
-
-        public void RemoveAt(int index)
-        {
-            if (index >= 0 && index < Count)
-            { 
-                list.RemoveAt(index);
-            }
-        }
-
-        public void RemoveRange(int index, int count)
-        {
-            if (index >= 0 && index + count <= Count)
-            {
-                list.RemoveRange(index, count);
-            }
-        }
-
-        public void Clear()
-        {
-            list.Clear();
-        }
-
-        public bool Contains(Block item)
-        {
-            return list.Contains(item);
         }
 
         public T Get<T>(int index) where T : Block
         {
             Block block = this[index];
 
-            if (block == null)
-            {
-                return null;
-            }
+            if (!typeof(T).IsAssignableFrom(block.GetType()))
+                throw new InvalidCastException("Cannot cast block to given generic type");
 
-            // TODO: Do some type checking before casting.
-
-            return (T)block;
+            return block as T;
         }
 
-        public override bool Serialize(Stream stream)
+        public void Add(Block item)
         {
-            stream.WriteByte((byte)ListType);
+            Value.Add(item);
+        }
 
-            foreach (Block block in list)
+        public void AddRange(Block[] items)
+        {
+            Value.AddRange(items);
+        }
+
+        public bool Remove(Block item)
+        {
+            return Value.Remove(item);
+        }
+
+        public void RemoveAt(int index)
+        {
+            Value.RemoveAt(index);
+        }
+
+        public void RemoveRange(int index, int count)
+        {
+            Value.RemoveRange(index, count);
+        }
+
+        public void Clear()
+        {
+            Value.Clear();
+        }
+
+        public bool Contains(Block item)
+        {
+            return Value.Contains(item);
+        }
+
+        public int IndexOf(Block item)
+        {
+            return Value.IndexOf(item);
+        }
+
+        public void Insert(int index, Block item)
+        {
+            Value.Insert(index, item);
+        }
+
+        public void CopyTo(Block[] array, int arrayIndex)
+        {
+            Value.CopyTo(array, arrayIndex);
+        }
+
+        public IEnumerator<Block> GetEnumerator()
+        {
+            return Value.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public override void Serialize(Stream stream)
+        {
+            foreach (Block block in Value)
             {
+                stream.WriteByte((byte)block.Type);
                 block.Serialize(stream);
             }
 
             stream.WriteByte((byte)BlockType.End);
-
-            return true;
         }
 
-        public override bool Deserialize(Stream stream)
+        public override void Deserialize(Stream stream)
         {
-            int iListType = stream.ReadByte();
-
-            if (iListType == -1)
-            {
-                Block.ErrorMessage = "Unexpected end of stream";
-
-                return false;
-            }
-
-            if (!Block.ValidBlockType((byte)iListType))
-            {
-                Block.ErrorMessage = "Unknown block type";
-
-                return false;
-            }
-
-            ListType = (BlockType)iListType;
-
-            if (ListType == BlockType.End)
-            {
-                Block.ErrorMessage = "Illegal block type in list block";
-
-                return false;
-            }
-
-            list.Clear();
+            Clear();
 
             while (true)
             {
-                Block block;
-
-                if (!Block.FromStream(stream, out block))
-                {
-                    return false;
-                }
+                Block block = Block.FromStream(stream);
 
                 if (block is BlockEnd)
                 {
-                    return true;
+                    return;
                 }
 
-                list.Add(block);
+                Value.Add(block);
             }
-        }   
+        }
+
     }
 }

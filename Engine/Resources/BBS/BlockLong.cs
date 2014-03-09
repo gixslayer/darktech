@@ -6,32 +6,17 @@ namespace DarkTech.Engine.Resources.BBS
 {
     public sealed class BlockLong : BlockData<long>
     {
-        public BlockLong() : this(0) { }
+        public BlockLong() : this(0L) { }
         public BlockLong(long defaultValue) : base(BlockType.Long, defaultValue) { }
 
-        public override bool Serialize(Stream stream)
+        public override void Serialize(Stream stream)
         {
-            byte[] buffer = ByteConverter.GetBytes(Value);
-
-            stream.Write(buffer, 0, buffer.Length);
-
-            return true;
+            stream.WriteLong(Value);
         }
 
-        public override bool Deserialize(Stream stream)
+        public override void Deserialize(Stream stream)
         {
-            byte[] buffer = new byte[8];
-
-            if (stream.Read(buffer, 0, buffer.Length) != buffer.Length)
-            {
-                Block.ErrorMessage = "Unexpected end of stream";
-
-                return false;
-            }
-
-            Value = ByteConverter.ToLong(buffer, 0);
-
-            return true;
+            Value = stream.ReadLong();
         }
     }
 }
