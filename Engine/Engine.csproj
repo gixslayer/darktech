@@ -46,6 +46,7 @@
     <Compile Include="Math\Vector2f.cs" />
     <Compile Include="Math\Vector3f.cs" />
     <Compile Include="Math\Vector4f.cs" />
+    <Compile Include="Platform.cs" />
     <Compile Include="Resources\BBS\BBSException.cs" />
     <Compile Include="Resources\BBS\BlockArray.cs" />
     <Compile Include="Resources\BBS\BlockBoolArray.cs" />
