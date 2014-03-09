@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-
 using System.Reflection;
 
 using DarkTech.Engine.Utils;
@@ -25,14 +25,23 @@ namespace DarkTech.Engine.Resources.BBS
                 if (type.ContainsGenericParameters)
                     continue;
 
-                Block block = (Block)Activator.CreateInstance(type);
-
-                if (TYPE_MAPPING.ContainsKey(block.Type))
+                try
                 {
-                    throw new InvalidOperationException("Duplicate block type in type mapping");
-                }
+                    Block block = (Block)Activator.CreateInstance(type);
 
-                TYPE_MAPPING.Add(block.Type, block.GetType());
+                    if (!TYPE_MAPPING.ContainsKey(block.Type))
+                    {
+                        TYPE_MAPPING.Add(block.Type, block.GetType());
+                    }
+                    else
+                    {
+                        Debug.Fail("Duplicate type mapping", "Duplicate type mapping for Block " + block.Type.ToString());
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Fail("Failed to create instance for type", "Failed to create instance for Block type " + type.FullName + " > " + e.Message);
+                }
             }
         }
 

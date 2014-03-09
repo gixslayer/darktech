@@ -38,6 +38,10 @@
   <ItemGroup>
     <Compile Include="Component.cs" />
     <Compile Include="ComponentSet.cs" />
+    <Compile Include="Event.cs" />
+    <Compile Include="EventDispatcher.cs" />
+    <Compile Include="EventQueue.cs" />
+    <Compile Include="EventType.cs" />
     <Compile Include="Math\MathHelper.cs" />
     <Compile Include="Math\Vector2f.cs" />
     <Compile Include="Math\Vector3f.cs" />
