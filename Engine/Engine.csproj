@@ -38,6 +38,7 @@
   <ItemGroup>
     <Compile Include="Component.cs" />
     <Compile Include="ComponentSet.cs" />
+    <Compile Include="Math\MathHelper.cs" />
     <Compile Include="Math\Vector2f.cs" />
     <Compile Include="Math\Vector3f.cs" />
     <Compile Include="Math\Vector4f.cs" />
