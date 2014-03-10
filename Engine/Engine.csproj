@@ -37,10 +37,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Component.cs" />
+    <Compile Include="ComponentEventHandler.cs" />
     <Compile Include="ComponentSet.cs" />
     <Compile Include="Event.cs" />
     <Compile Include="EventDispatcher.cs" />
-    <Compile Include="EventQueue.cs" />
     <Compile Include="EventType.cs" />
     <Compile Include="Math\MathHelper.cs" />
     <Compile Include="Math\Vector2f.cs" />
@@ -74,7 +74,6 @@
     <Compile Include="Engine.Printing.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="EntityGroup.cs" />
-    <Compile Include="EntityList.cs" />
     <Compile Include="NamedEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\BBS\BBSFile.cs" />

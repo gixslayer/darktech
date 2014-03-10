@@ -10,9 +10,8 @@
         public Component()
         {
             this.entity = null;
-
-            SuppressUpdate = false;
-            SuppressRender = false;
+            this.SuppressUpdate = false;
+            this.SuppressRender = false;
         }
 
         internal void SetEntity(Entity entity)

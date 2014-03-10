@@ -3,19 +3,19 @@ using System.Collections.Generic;
 
 namespace DarkTech.Engine
 {
-    public delegate void EventHandler<T>(T e) where T : Event;
-
     public sealed class EventDispatcher
     {
-        private EventQueue producer;
-        private EventQueue consumer;
-        private Dictionary<EventType, List<EventHandlerBase>> handlers;
+        private Queue<Event> producer;
+        private Queue<Event> consumer;
+        private readonly Dictionary<EventType, List<EventHandlerBase>> handlers;
+        private readonly List<Action<Event>> globalHandlers;
 
         public EventDispatcher()
         {
-            this.producer = new EventQueue();
-            this.consumer = new EventQueue();
+            this.producer = new Queue<Event>();
+            this.consumer = new Queue<Event>();
             this.handlers = new Dictionary<EventType, List<EventHandlerBase>>();
+            this.globalHandlers = new List<Action<Event>>();
         }
 
         public void RegisterHandler<T>(Action<T> handler) where T : Event
@@ -28,6 +28,11 @@ namespace DarkTech.Engine
             }
 
             handlers[eventType].Add(new EventHandler<T>(handler));
+        }
+
+        public void RegisterGlobalHandler(Action<Event> globalHandler)
+        {
+            globalHandlers.Add(globalHandler);
         }
 
         // Several threads will call this function.
@@ -45,12 +50,12 @@ namespace DarkTech.Engine
             // Swap queues
             lock (producer)
             {
-                EventQueue temp = producer;
+                Queue<Event> temp = producer;
                 producer = consumer;
                 consumer = temp;
             }
 
-            while (consumer.HasNext)
+            while (consumer.Count != 0)
             {
                 Event e = consumer.Dequeue();
 
@@ -67,26 +72,31 @@ namespace DarkTech.Engine
                     handler.Invoke(e);
                 }
             }
+
+            foreach (Action<Event> globalHandler in globalHandlers)
+            {
+                globalHandler(e);
+            }
+        }
+    }
+
+    internal abstract class EventHandlerBase
+    {
+        public abstract void Invoke(Event e);
+    }
+
+    internal sealed class EventHandler<T> : EventHandlerBase where T : Event
+    {
+        private readonly Action<T> handler;
+
+        public EventHandler(Action<T> handler)
+        {
+            this.handler = handler;
         }
 
-        private abstract class EventHandlerBase
+        public override void Invoke(Event e)
         {
-            public abstract void Invoke(Event e);
-        }
-
-        private sealed class EventHandler<T> : EventHandlerBase where T : Event
-        {
-            private Action<T> handler;
-
-            public EventHandler(Action<T> handler)
-            {
-                this.handler = handler;
-            }
-
-            public override void Invoke(Event e)
-            {
-                handler(e as T);
-            }
+            handler(e as T);
         }
     }
 }

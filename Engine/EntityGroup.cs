@@ -1,29 +1,27 @@
-﻿namespace DarkTech.Engine
+﻿using System;
+using System.Collections.Generic;
+
+namespace DarkTech.Engine
 {
     public class EntityGroup : NamedEntity
     {
-        private EntityList children;
+        private List<Entity> children;
 
         public bool SuppressChildUpdate { get; set; } // Suppress all child entity updates.
         public bool SuppressChildRender { get; set; } // Suppress all child entity renders.
 
         public EntityGroup() : base("root")
         {
-            this.children = new EntityList();
-
-            SuppressChildUpdate = false;
-            SuppressChildRender = false;
+            this.children = new List<Entity>();
+            this.SuppressChildUpdate = false;
+            this.SuppressChildRender = false;
         }
 
         #region Entity
         public void AddEntity(Entity entity)
         {
-#if DEBUG
             if (entity == null)
-            {
-                throw new System.ArgumentNullException("entity");
-            }
-#endif
+                throw new ArgumentNullException("entity");
 
             children.Add(entity);
 
@@ -32,37 +30,23 @@
 
         public bool HasEntity(Entity entity)
         {
-#if DEBUG
-            if (entity == null)
-            {
-                throw new System.ArgumentNullException("entity");
-            }
-#endif
-
             return children.Contains(entity);
         }
 
         public bool HasEntity(uint id)
         {
-            Entity entity = Engine.Scene.GetEntity(id);
-
-            if (entity == null)
+            if (!Engine.Scene.HasEntity(id))
             {
                 return false;
             }
+                
+            Entity entity = Engine.Scene.GetEntity(id);
 
             return HasEntity(entity);
         }
 
         public void RemoveEntity(Entity entity)
         {
-#if DEBUG
-            if (entity == null)
-            {
-                throw new System.ArgumentNullException("entity");
-            }
-#endif
-
             if (children.Remove(entity))
             {
                 Engine.Scene.UnregisterEntity(entity);
@@ -71,10 +55,10 @@
 
         public void RemoveEntity(uint id)
         {
-            Entity entity = Engine.Scene.GetEntity(id);
-
-            if (entity != null)
+            if (Engine.Scene.HasEntity(id))
             {
+                Entity entity = Engine.Scene.GetEntity(id);
+
                 RemoveEntity(entity);
             }
         }

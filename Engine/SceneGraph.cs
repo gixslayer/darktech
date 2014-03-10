@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace DarkTech.Engine
 {
     public sealed class SceneGraph
     {
-        private Dictionary<uint, Entity> entityLookup;
-        private EntityGroup root;
+        private readonly Dictionary<uint, Entity> entityLookup;
+        private readonly EntityGroup root;
         private uint nextEntityId;
 
         public EntityGroup Root { get { return root; } }
@@ -26,9 +27,7 @@ namespace DarkTech.Engine
         public Entity GetEntity(uint id)
         {
             if (!HasEntity(id))
-            {
-                return null;
-            }
+                throw new ArgumentException("Unregistered entity id", "id");
 
             return entityLookup[id];
         }

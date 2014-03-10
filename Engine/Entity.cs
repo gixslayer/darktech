@@ -1,8 +1,11 @@
-﻿namespace DarkTech.Engine
+﻿using System;
+using System.Collections.Generic;
+
+namespace DarkTech.Engine
 {
     public class Entity
     {
-        private ComponentSet components;
+        private readonly ComponentSet components;
 
         public bool SuppressUpdate { get; set; } // Suppress all component updates regardless of their property.
         public bool SuppressRender { get; set; } // Suppress all component renders regardless of their property.
@@ -11,21 +14,16 @@
         public Entity()
         {
             this.components = new ComponentSet();
-            
-            SuppressUpdate = false;
-            SuppressRender = false;
-            Id = Engine.Scene.GetEntityId();
+            this.SuppressUpdate = false;
+            this.SuppressRender = false;
+            this.Id = Engine.Scene.GetEntityId();
         }
 
         #region Component
         public void AddComponent(Component component)
         {
-#if DEBUG
             if (component == null)
-            {
-                throw new System.ArgumentNullException("component");
-            }
-#endif
+                throw new ArgumentNullException("component");
 
             component.SetEntity(this);
 
