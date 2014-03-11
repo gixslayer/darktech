@@ -7,17 +7,17 @@ namespace DarkTech.Engine.Resources
 {
     public sealed class ResourceManager
     {
-        private Dictionary<string, Stack<PakFile>> pakMapping;
-        private Dictionary<string, PakFile> loadedPaks;
-        private Dictionary<Type, ResourceCache> resourceCaches;
-        private Dictionary<Type, ResourceLoader> resourceLoaders;
+        private readonly Dictionary<string, Stack<PakFile>> pakMapping;
+        private readonly Dictionary<string, PakFile> loadedPaks;
+        private readonly Dictionary<Type, ResourceLoader> resourceLoaders;
+        private readonly Dictionary<string, Resource> resourceCache;
 
         public ResourceManager()
         {
             this.pakMapping = new Dictionary<string, Stack<PakFile>>();
             this.loadedPaks = new Dictionary<string, PakFile>();
-            this.resourceCaches = new Dictionary<Type, ResourceCache>();
             this.resourceLoaders = new Dictionary<Type, ResourceLoader>();
+            this.resourceCache = new Dictionary<string, Resource>();
         }
 
         public void Dispose()
@@ -27,14 +27,14 @@ namespace DarkTech.Engine.Resources
                 pakFile.Close();
             }
 
-            foreach (ResourceCache<IResource> resourceCache in resourceCaches.Values)
+            foreach (Resource resource in resourceCache.Values)
             {
-                resourceCache.Dispose();
+                resource.Dispose();
             }
 
             pakMapping.Clear();
             loadedPaks.Clear();
-            resourceCaches.Clear();
+            resourceCache.Clear();
             resourceLoaders.Clear();
         }
 
@@ -42,13 +42,11 @@ namespace DarkTech.Engine.Resources
         {
             if (loadedPaks.ContainsKey(path))
             {
-                Engine.Warningf("Pak {0} is already loaded", path);
-
+                Engine.PrintDebugf("Pak {0} is already loaded", path);
                 return true;
             }
 
-            PakFile pakFile = new PakFile();
-
+            // Make OpenFile return a boolean and add an out File parameter.
             File file = Engine.FileSystem.OpenFile(path, FileMode.Open, FileAccess.Read);
 
             if(file == null) 
@@ -56,6 +54,10 @@ namespace DarkTech.Engine.Resources
                 return false;
             }
 
+            // Pass the path in the constructor and load inside the constructor.
+            PakFile pakFile = new PakFile();
+
+            // pakFile.Load should throw an exception to provide additional information rather than returning false.
             if (!pakFile.Load(file))
             {
                 Engine.Errorf("Could not open pak file {0}", path);
@@ -63,8 +65,10 @@ namespace DarkTech.Engine.Resources
                 return false;
             }
 
+            // Pak file successfully loaded at this point. Add it to the map of open pak files.
             loadedPaks.Add(path, pakFile);
 
+            // Map all entries in the pak file.
             foreach (string entry in pakFile.GetEntryNames())
             {
                 if (!pakMapping.ContainsKey(entry))
@@ -82,8 +86,7 @@ namespace DarkTech.Engine.Resources
         {
             if (!loadedPaks.ContainsKey(path))
             {
-                Engine.Warningf("Pak {0} isn't loaded", path);
-
+                Engine.PrintDebugf("Pak {0} isn't loaded", path);
                 return;
             }
 
@@ -135,71 +138,70 @@ namespace DarkTech.Engine.Resources
             return pakMapping.ContainsKey(name);
         }
 
-        public T GetResource<T>(string name) where T : IResource
+        public T GetResource<T>(string name) where T : Resource
         {
-            if (!IsResourceCached<T>(name))
+            // Ensure requested resource is cached.
+            if (!IsResourceCached(name))
             {
                 if (!CacheResource<T>(name))
                 {
-                    Engine.Errorf("Failed to cache resource {0} of type {1}", name, typeof(T).FullName);
+                    Engine.Errorf("Failed to cache resource {0}", name);
 
-                    return default(T);
+                    return null;
                 }
             }
 
-            return GetResourceCache<T>()[name];
+            Resource resource = resourceCache[name];
+
+            // Ensure resource can be converted to requested generic type.
+            if (!typeof(T).IsAssignableFrom(resource.GetType()))
+                throw new ArgumentException("Resource type mismatch", "T");
+
+            return resource as T;
         }
 
-        public bool CacheResource<T>(string name) where T : IResource
+        public bool CacheResource<T>(string name) where T : Resource
         {
-            if (IsResourceCached<T>(name))
+            if (IsResourceCached(name))
             {
-                Engine.Warningf("Duplicate resource cache entry for {0} of type {1}", name, typeof(T).FullName);
+                Engine.Warningf("Duplicate resource cache entry for {0}", name);
 
-                DisposeResource<T>(name);
+                DisposeResource(name);
             }
 
             T resource;
 
+            // LoadResource should print information in case it fails to load the resource.
             if (!LoadResource<T>(name, out resource))
             {
                 return false;
             }
 
-            if (!resourceCaches.ContainsKey(typeof(T)))
-            {
-                resourceCaches.Add(typeof(T), new ResourceCache<T>());
-            }
-
-            GetResourceCache<T>().CacheResource(name, resource);
+            resourceCache.Add(name, resource);
 
             return true;
         }
 
-        public bool IsResourceCached<T>(string name) where T : IResource
+        public bool IsResourceCached(string name)
         {
-            if (!resourceCaches.ContainsKey(typeof(T)))
-            {
-                return false;
-            }
-
-            return GetResourceCache<T>().HasResource(name);
+            return resourceCache.ContainsKey(name);
         }
 
-        public void DisposeResource<T>(string name) where T : IResource
+        public void DisposeResource(string name)
         {
-            if (IsResourceCached<T>(name))
+            if (IsResourceCached(name))
             {
-                GetResourceCache<T>().DisposeResource(name);
+                resourceCache[name].Dispose();
+                resourceCache.Remove(name);
             }
         }
 
-        public bool HasResourceLoader<T>() where T : IResource
+        public bool HasResourceLoader<T>() where T : Resource
         {
             return resourceLoaders.ContainsKey(typeof(T));
         }
 
-        public void RegisterResourceLoader<T>(ResourceLoader<T> loader) where T : IResource
+        public void RegisterResourceLoader<T>(ResourceLoader<T> loader) where T : Resource
         {
             if (HasResourceLoader<T>())
             {
@@ -211,7 +213,7 @@ namespace DarkTech.Engine.Resources
             resourceLoaders.Add(typeof(T), loader);
         }
 
-        public void UnregisterResourceLoader<T>() where T : IResource
+        public void UnregisterResourceLoader<T>() where T : Resource
         {
             if (HasResourceLoader<T>())
             {
@@ -219,9 +221,9 @@ namespace DarkTech.Engine.Resources
             }
         }
 
-        private bool LoadResource<T>(string name, out T result) where T : IResource
+        private bool LoadResource<T>(string name, out T result) where T : Resource
         {
-            result = default(T);
+            result = null;
 
             if (!HasResource(name))
             {
@@ -230,8 +232,6 @@ namespace DarkTech.Engine.Resources
                 return false;
             }
 
-            PakStream stream = GetResourceStream(name);
-
             if (!HasResourceLoader<T>())
             {
                 Engine.Errorf("Missing resource loader for type {0}", typeof(T).FullName);
@@ -239,23 +239,18 @@ namespace DarkTech.Engine.Resources
                 return false;
             }
 
+            PakStream stream = GetResourceStream(name);
+
             // The resource loader will always be of type ResourceLoader<T>.
             ResourceLoader<T> loader = resourceLoaders[typeof(T)] as ResourceLoader<T>;
 
+            // The resource loader should print information in case it fails to load the resource.
             return loader.Load(stream, out result);
         }
 
         private PakStream GetResourceStream(string name)
         {
-            if (!HasResource(name))
-                throw new ArgumentException("Resource does not exist", "name");
-
             return pakMapping[name].Peek().GetEntryStream(name);
-        }
-
-        private ResourceCache<T> GetResourceCache<T>() where T : IResource
-        {
-            return resourceCaches[typeof(T)] as ResourceCache<T>;
         }
     }
 }

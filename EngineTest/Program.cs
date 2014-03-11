@@ -28,7 +28,7 @@ namespace EngineTest
         }
     }
 
-    class Resource : IResource
+    class Resource : Resource
     {
         public void Dispose()
         {

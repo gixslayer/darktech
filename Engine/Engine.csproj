@@ -64,8 +64,7 @@
     <Compile Include="Resources\BBS\BlockUIntArray.cs" />
     <Compile Include="Resources\BBS\BlockULongArray.cs" />
     <Compile Include="Resources\BBS\BlockUShortArray.cs" />
-    <Compile Include="Resources\IResource.cs" />
-    <Compile Include="Resources\ResourceCache.cs" />
+    <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\ResourceLoader.cs" />
     <Compile Include="Scripting\CachedCvar.cs" />
     <Compile Include="Scripting\CommandBuffer.cs" />
