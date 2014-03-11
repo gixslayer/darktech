@@ -64,6 +64,7 @@
     <Compile Include="Resources\BBS\BlockUIntArray.cs" />
     <Compile Include="Resources\BBS\BlockULongArray.cs" />
     <Compile Include="Resources\BBS\BlockUShortArray.cs" />
+    <Compile Include="Resources\PAK\PakException.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\ResourceLoader.cs" />
     <Compile Include="Scripting\CachedCvar.cs" />

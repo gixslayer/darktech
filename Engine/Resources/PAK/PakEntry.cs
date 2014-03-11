@@ -5,103 +5,59 @@ using DarkTech.Engine.Utils;
 
 namespace DarkTech.Engine.Resources.PAK
 {
-    /// <summary>
-    /// An entry in a <see cref="PakFile"/>.
-    /// </summary>
     public sealed class PakEntry
     {
-        /// <summary>
-        /// The unique name of the pak entry (a full relative path to the root of the pak file).
-        /// </summary>
         public string Name { get; private set; }
-        /// <summary>
-        /// The flags of the pak entry.
-        /// </summary>
         public PakEntryFlags Flags { get; private set; }
-        /// <summary>
-        /// The size of the pak entry data (this excludes the meta-data described in the <see cref="PakEntry"/> class).
-        /// </summary>
         public long Size { get; private set; }
-        /// <summary>
-        /// The offset within the source stream to the start of the data.
-        /// </summary>
         public long Offset { get; private set; }
 
-        private PakEntry() { }
+        private PakEntry(string name, PakEntryFlags flags, long size, long offset) 
+        {
+            this.Name = name;
+            this.Flags = flags;
+            this.Size = size;
+            this.Offset = offset;
+        }
 
+        /*
         private void Serialize(Stream stream)
         {
             byte[] nameBuffer = Encoding.UTF8.GetBytes(Name);
-            byte[] nameLengthBuffer = ByteConverter.GetBytes((ushort)nameBuffer.Length);
-            byte[] sizeBuffer = ByteConverter.GetBytes((uint)Size);
 
-            stream.Write(nameLengthBuffer, 0, nameLengthBuffer.Length);
-            stream.Write(nameBuffer, 0, nameBuffer.Length);
+            stream.WriteUShort((ushort)nameBuffer.Length);
+            stream.Write(nameBuffer);
             stream.WriteByte((byte)Flags);
-            stream.Write(sizeBuffer, 0, sizeBuffer.Length);
+            stream.WriteUInt((uint)Size);
         }
+        */
 
-        public static bool Deserialize(Stream stream, out PakEntry entry)
+        public static PakEntry Deserialize(Stream stream)
         {
-            entry = new PakEntry();
+            ushort nameLength = stream.ReadUShort();
 
-            // Deserialize the name.
-            byte[] nameLengthBuffer = new byte[2];
-
-            if (!stream.SaveRead(nameLengthBuffer))
-            {
-                return false;
-            }
-
-            ushort nameLength = ByteConverter.ToUShort(nameLengthBuffer, 0);
-
-            // The name must be at least one character long.
             if (nameLength == 0)
-            {
-                return false;
-            }
+                throw new PakException("Pak entry name cannot be 0 bytes long");
 
             byte[] nameBuffer = new byte[nameLength];
 
             if (!stream.SaveRead(nameBuffer))
-            {
-                return false;
-            }
+                throw PakException.UNEXPECTED_EOS;
 
-            entry.Name = Encoding.UTF8.GetString(nameBuffer);
+            string name = Encoding.UTF8.GetString(nameBuffer);
+            PakEntryFlags flags = (PakEntryFlags)stream.ReadByteEx();
+            long size = stream.ReadUInt();
+            long offset = stream.Position;
 
-            // Deserialize the flags.
-            int iFlags = stream.ReadByte();
+            if (size == 0)
+                throw new PakException("Pak entry size must be at least 0 bytes long");
+            if (offset + size > stream.Length)
+                throw new PakException("Pak entry size cannot exceed stream size");
 
-            if (iFlags == -1)
-            {
-                return false;
-            }
-
-            entry.Flags = (PakEntryFlags)iFlags;
-
-            // Deserialize the size.
-            byte[] sizeBuffer = new byte[4];
-
-            if (!stream.SaveRead(sizeBuffer))
-            {
-                return false;
-            }
-
-            entry.Size = ByteConverter.ToUInt(sizeBuffer, 0);
-
-            // Make sure the entry size is actually valid (must be at least one byte and lie within the source stream).
-            if (entry.Size == 0 || stream.Position + entry.Size > stream.Length)
-            {
-                return false;
-            }
-
-            // Set the data offset to the current stream position.
-            entry.Offset = stream.Position;
-
-            return true;
+            return new PakEntry(name, flags, size, offset);
         }
 
+        /*
         public static void Serialize(Stream stream, Stream source, string name, PakEntryFlags flags)
         {
             // TODO: Compression support.
@@ -154,5 +110,6 @@ namespace DarkTech.Engine.Resources.PAK
 
             return true;
         }
+        */
     }
 }

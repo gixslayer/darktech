@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 
 using DarkTech.Engine.Resources.PAK;
+using DarkTech.Engine.Utils;
 
 namespace DarkTech.Engine.Resources
 {
@@ -40,27 +42,29 @@ namespace DarkTech.Engine.Resources
 
         public bool LoadPak(string path)
         {
+            File file;
+            PakFile pakFile;
+
             if (loadedPaks.ContainsKey(path))
             {
                 Engine.PrintDebugf("Pak {0} is already loaded", path);
+
                 return true;
             }
 
-            // Make OpenFile return a boolean and add an out File parameter.
-            File file = Engine.FileSystem.OpenFile(path, FileMode.Open, FileAccess.Read);
-
-            if(file == null) 
+            if (!Engine.FileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, out file))
             {
                 return false;
             }
 
-            // Pass the path in the constructor and load inside the constructor.
-            PakFile pakFile = new PakFile();
-
-            // pakFile.Load should throw an exception to provide additional information rather than returning false.
-            if (!pakFile.Load(file))
+            // Load the pak file.
+            try
             {
-                Engine.Errorf("Could not open pak file {0}", path);
+                pakFile = new PakFile(file);
+            }
+            catch (StreamException e)
+            {
+                Engine.Errorf("Could not open pak file {0} > ", path, e.Message);
 
                 return false;
             }
@@ -69,7 +73,7 @@ namespace DarkTech.Engine.Resources
             loadedPaks.Add(path, pakFile);
 
             // Map all entries in the pak file.
-            foreach (string entry in pakFile.GetEntryNames())
+            foreach (string entry in pakFile.EntryNames)
             {
                 if (!pakMapping.ContainsKey(entry))
                 {
@@ -87,13 +91,14 @@ namespace DarkTech.Engine.Resources
             if (!loadedPaks.ContainsKey(path))
             {
                 Engine.PrintDebugf("Pak {0} isn't loaded", path);
+
                 return;
             }
 
             PakFile pakFile = loadedPaks[path];
 
             // Upmap all entries in the pak file.
-            foreach (string entry in pakFile.GetEntryNames())
+            foreach (string entry in pakFile.EntryNames)
             {
                 if (pakMapping[entry].Peek().Equals(pakFile))
                 {
@@ -239,16 +244,15 @@ namespace DarkTech.Engine.Resources
                 return false;
             }
 
-            PakStream stream = GetResourceStream(name);
-
             // The resource loader will always be of type ResourceLoader<T>.
             ResourceLoader<T> loader = resourceLoaders[typeof(T)] as ResourceLoader<T>;
+            Stream stream = GetResourceStream(name);
 
             // The resource loader should print information in case it fails to load the resource.
             return loader.Load(stream, out result);
         }
 
-        private PakStream GetResourceStream(string name)
+        private Stream GetResourceStream(string name)
         {
             return pakMapping[name].Peek().GetEntryStream(name);
         }

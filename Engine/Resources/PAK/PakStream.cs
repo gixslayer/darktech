@@ -5,17 +5,15 @@ namespace DarkTech.Engine.Resources.PAK
 {
     public class PakStream : Stream
     {
-        private Stream baseStream;
-        private long offset;
-        private long length;
+        private readonly Stream baseStream;
+        private readonly long offset;
+        private readonly long length;
         private long position;
 
         internal PakStream(Stream baseStream, long offset, long length)
         {
             if (!baseStream.CanRead || !baseStream.CanSeek)
-            {
                 throw new ArgumentException("Base stream must be able to read and seek", "baseStream");
-            }
 
             this.baseStream = baseStream;
             this.baseStream.Position = offset;
@@ -54,9 +52,7 @@ namespace DarkTech.Engine.Resources.PAK
             set 
             {
                 if (value < 0 || value >= length)
-                {
                     throw new ArgumentOutOfRangeException("Position", "Position must be between 0 and the length of the pak stream");
-                }
 
                 position = value;
 
@@ -67,16 +63,14 @@ namespace DarkTech.Engine.Resources.PAK
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (position + count > length)
-            {
                 throw new ArgumentOutOfRangeException("count", "Can not read past the pak stream");
-            }
 
             return baseStream.Read(buffer, offset, count);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            long basePosition;
+            long basePosition = 0;
 
             switch(origin)
             {
@@ -91,9 +85,6 @@ namespace DarkTech.Engine.Resources.PAK
                 case SeekOrigin.End:
                     basePosition = length - 1;
                     break;
-
-                default:
-                    throw new ArgumentException("Unknown origin type");
             }
 
             Position = basePosition + offset;

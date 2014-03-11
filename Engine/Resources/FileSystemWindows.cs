@@ -164,8 +164,10 @@ namespace DarkTech.Engine.Resources
             return new FileInfo(name, extension, parentPath, size);
         }
 
-        public override File OpenFile(string path, FileMode mode, FileAccess access)
+        public override bool OpenFile(string path, FileMode mode, FileAccess access, out File file)
         {
+            file = null;
+
             if (mode == FileMode.OpenOrCreate)
             {
                 mode = FileExists(path) ? FileMode.Open : FileMode.Create;
@@ -182,7 +184,7 @@ namespace DarkTech.Engine.Resources
                     {
                         Engine.Error("Missing write access on create file");
 
-                        return null;
+                        return false;
                     }
                     break;
 
@@ -192,7 +194,7 @@ namespace DarkTech.Engine.Resources
                     {
                         Engine.Error("Missing read access on open file");
 
-                        return null;
+                        return false;
                     }
                     break;
 
@@ -202,7 +204,7 @@ namespace DarkTech.Engine.Resources
                     {
                         Engine.Error("Missing write access on append file");
 
-                        return null;
+                        return false;
                     }
                     break;
 
@@ -243,7 +245,7 @@ namespace DarkTech.Engine.Resources
             {
                 Engine.Errorf("Exception in OpenFile > {0}", e.Message);
 
-                return null;
+                return false;
             }
 
             if (mode == FileMode.Create)
@@ -280,7 +282,9 @@ namespace DarkTech.Engine.Resources
                 size = fileInfo.Size;
             }
 
-            return new File(name, extension, parentPath, size, stream);
+            file = new File(name, extension, parentPath, size, stream);
+
+            return true;
         }
 
         public override void CloseFile(File file)

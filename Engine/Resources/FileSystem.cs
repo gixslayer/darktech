@@ -15,7 +15,7 @@ namespace DarkTech.Engine.Resources
         public abstract bool FileExists(string path);
         public abstract void DeleteFile(string path);
         public abstract FileInfo GetFileInfo(string path);
-        public abstract File OpenFile(string path, FileMode mode, FileAccess access);
+        public abstract bool OpenFile(string path, FileMode mode, FileAccess access, out File file);
         public abstract void CloseFile(File file);
 
         public string CombinePath(params string[] paths)

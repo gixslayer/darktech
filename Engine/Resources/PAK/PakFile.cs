@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 using DarkTech.Engine.Utils;
@@ -8,51 +9,38 @@ namespace DarkTech.Engine.Resources.PAK
     public sealed class PakFile
     {
         private readonly Dictionary<string, PakEntry> entries;
-        private Stream stream;
+        private readonly Stream stream;
 
         public int EntryCount { get { return entries.Count; } }
+        public Dictionary<string, PakEntry>.KeyCollection EntryNames { get { return entries.Keys; } }
+        public Dictionary<string, PakEntry>.ValueCollection Entries { get { return entries.Values; } }
 
-        public PakFile()
+        public PakFile(Stream stream)
         {
-            this.entries = new Dictionary<string, PakEntry>();
-        }
+            if (stream == null)
+                throw new ArgumentNullException("stream");
 
-        public bool Load(Stream stream)
-        {
-            entries.Clear();
             this.stream = stream;
+            this.entries = new Dictionary<string, PakEntry>();
 
             while (stream.Position < stream.Length)
             {
-                PakEntry entry;
+                PakEntry entry = PakEntry.Deserialize(stream);
 
-                if (!PakEntry.Deserialize(stream, out entry))
-                {
-                    return false;
-                }
-
-                // Duplicate entry names are not allowed.
                 if (entries.ContainsKey(entry.Name))
-                {
-                    return false;
-                }
-
-                // Advance past the actual data to potentially reach the next entry.
-                stream.Seek(entry.Size, SeekOrigin.Current);
+                    throw new PakException("Duplicate pak entry");
 
                 entries.Add(entry.Name, entry);
-            }
 
-            return true;
+                // Advance past the actual data to reach the next entry/end of stream.
+                stream.Seek(entry.Size, SeekOrigin.Current);
+            }
         }
 
         public void Close()
         {
-            if (stream != null)
-            {
-                stream.Close();
-                stream.Dispose();
-            }
+            stream.Close();
+            stream.Dispose();
         }
 
         public bool HasEntry(string name)
@@ -63,43 +51,30 @@ namespace DarkTech.Engine.Resources.PAK
         public PakEntry GetEntry(string name)
         {
             if (!HasEntry(name))
-            {
-                return null;
-            }
+                throw new ArgumentException("Could not find entry", "name");
 
             return entries[name];
         }
 
-        public string[] GetEntryNames()
-        {
-            string[] buffer = new string[entries.Count];
-
-            entries.Keys.CopyTo(buffer, 0);
-
-            return buffer;
-        }
-
-        public PakEntry[] GetEntries()
-        {
-            PakEntry[] buffer = new PakEntry[entries.Count];
-
-            entries.Values.CopyTo(buffer, 0);
-
-            return buffer;
-        }
-
-        public PakStream GetEntryStream(string name)
+        public Stream GetEntryStream(string name)
         {
             if (!HasEntry(name))
-            {
-                return null;
-            }
+                throw new ArgumentException("Could not find entry", "name");
 
             PakEntry entry = GetEntry(name);
+            PakStream pakStream = new PakStream(stream, entry.Offset, entry.Size);
 
-            return new PakStream(stream, entry.Offset, entry.Size);
+            switch (entry.Flags)
+            {
+                case PakEntryFlags.None:
+                    return pakStream;
+
+                default:
+                    throw new InvalidOperationException("Unknown pak entry flags");
+            }
         }
 
+        /*
         public bool Extract(string name, out byte[] dest)
         {
             // TODO: Compression support.
@@ -198,5 +173,6 @@ namespace DarkTech.Engine.Resources.PAK
 
             return true;
         }
+        */
     }
 }
