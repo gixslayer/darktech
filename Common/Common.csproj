@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7BF6A7BC-3B48-4C3F-85AF-88D48791295E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DarkTech.Common</RootNamespace>
+    <AssemblyName>Common</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BBS\BBSException.cs" />
+    <Compile Include="BBS\BBSFile.cs" />
+    <Compile Include="BBS\BBSFlags.cs" />
+    <Compile Include="BBS\Block.cs" />
+    <Compile Include="BBS\BlockArray.cs" />
+    <Compile Include="BBS\BlockBool.cs" />
+    <Compile Include="BBS\BlockBoolArray.cs" />
+    <Compile Include="BBS\BlockByte.cs" />
+    <Compile Include="BBS\BlockByteArray.cs" />
+    <Compile Include="BBS\BlockChar.cs" />
+    <Compile Include="BBS\BlockCharArray.cs" />
+    <Compile Include="BBS\BlockData.cs" />
+    <Compile Include="BBS\BlockDouble.cs" />
+    <Compile Include="BBS\BlockDoubleArray.cs" />
+    <Compile Include="BBS\BlockEnd.cs" />
+    <Compile Include="BBS\BlockFloat.cs" />
+    <Compile Include="BBS\BlockFloatArray.cs" />
+    <Compile Include="BBS\BlockInt.cs" />
+    <Compile Include="BBS\BlockIntArray.cs" />
+    <Compile Include="BBS\BlockList.cs" />
+    <Compile Include="BBS\BlockListArray.cs" />
+    <Compile Include="BBS\BlockLong.cs" />
+    <Compile Include="BBS\BlockLongArray.cs" />
+    <Compile Include="BBS\BlockNode.cs" />
+    <Compile Include="BBS\BlockNodeArray.cs" />
+    <Compile Include="BBS\BlockSByte.cs" />
+    <Compile Include="BBS\BlockSByteArray.cs" />
+    <Compile Include="BBS\BlockShort.cs" />
+    <Compile Include="BBS\BlockShortArray.cs" />
+    <Compile Include="BBS\BlockString.cs" />
+    <Compile Include="BBS\BlockStringArray.cs" />
+    <Compile Include="BBS\BlockStringEx.cs" />
+    <Compile Include="BBS\BlockStringExArray.cs" />
+    <Compile Include="BBS\BlockType.cs" />
+    <Compile Include="BBS\BlockUInt.cs" />
+    <Compile Include="BBS\BlockUIntArray.cs" />
+    <Compile Include="BBS\BlockULong.cs" />
+    <Compile Include="BBS\BlockULongArray.cs" />
+    <Compile Include="BBS\BlockUShort.cs" />
+    <Compile Include="BBS\BlockUShortArray.cs" />
+    <Compile Include="PAK\PakEntry.cs" />
+    <Compile Include="PAK\PakEntryFlags.cs" />
+    <Compile Include="PAK\PakException.cs" />
+    <Compile Include="PAK\PakFile.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\ByteConverter.cs" />
+    <Compile Include="Utils\Memory.cs" />
+    <Compile Include="Utils\StreamException.cs" />
+    <Compile Include="Utils\StreamExtensions.cs" />
+    <Compile Include="Utils\SubStream.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

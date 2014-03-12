@@ -47,24 +47,6 @@
     <Compile Include="Math\Vector3f.cs" />
     <Compile Include="Math\Vector4f.cs" />
     <Compile Include="Platform.cs" />
-    <Compile Include="Resources\BBS\BBSException.cs" />
-    <Compile Include="Resources\BBS\BlockArray.cs" />
-    <Compile Include="Resources\BBS\BlockBoolArray.cs" />
-    <Compile Include="Resources\BBS\BlockDoubleArray.cs" />
-    <Compile Include="Resources\BBS\BlockFloatArray.cs" />
-    <Compile Include="Resources\BBS\BlockIntArray.cs" />
-    <Compile Include="Resources\BBS\BlockListArray.cs" />
-    <Compile Include="Resources\BBS\BlockLongArray.cs" />
-    <Compile Include="Resources\BBS\BlockNodeArray.cs" />
-    <Compile Include="Resources\BBS\BlockSByteArray.cs" />
-    <Compile Include="Resources\BBS\BlockCharArray.cs" />
-    <Compile Include="Resources\BBS\BlockShortArray.cs" />
-    <Compile Include="Resources\BBS\BlockStringArray.cs" />
-    <Compile Include="Resources\BBS\BlockStringExArray.cs" />
-    <Compile Include="Resources\BBS\BlockUIntArray.cs" />
-    <Compile Include="Resources\BBS\BlockULongArray.cs" />
-    <Compile Include="Resources\BBS\BlockUShortArray.cs" />
-    <Compile Include="Resources\PAK\PakException.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\ResourceLoader.cs" />
     <Compile Include="Scripting\CachedCvar.cs" />
@@ -76,39 +58,12 @@
     <Compile Include="EntityGroup.cs" />
     <Compile Include="NamedEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Resources\BBS\BBSFile.cs" />
-    <Compile Include="Resources\BBS\BBSFlags.cs" />
-    <Compile Include="Resources\BBS\Block.cs" />
-    <Compile Include="Resources\BBS\BlockByteArray.cs" />
-    <Compile Include="Resources\BBS\BlockData.cs" />
-    <Compile Include="Resources\BBS\BlockBool.cs" />
-    <Compile Include="Resources\BBS\BlockByte.cs" />
-    <Compile Include="Resources\BBS\BlockChar.cs" />
-    <Compile Include="Resources\BBS\BlockDouble.cs" />
-    <Compile Include="Resources\BBS\BlockEnd.cs" />
-    <Compile Include="Resources\BBS\BlockFloat.cs" />
-    <Compile Include="Resources\BBS\BlockInt.cs" />
-    <Compile Include="Resources\BBS\BlockList.cs" />
-    <Compile Include="Resources\BBS\BlockLong.cs" />
-    <Compile Include="Resources\BBS\BlockNode.cs" />
-    <Compile Include="Resources\BBS\BlockSByte.cs" />
-    <Compile Include="Resources\BBS\BlockShort.cs" />
-    <Compile Include="Resources\BBS\BlockString.cs" />
-    <Compile Include="Resources\BBS\BlockStringEx.cs" />
-    <Compile Include="Resources\BBS\BlockType.cs" />
-    <Compile Include="Resources\BBS\BlockUInt.cs" />
-    <Compile Include="Resources\BBS\BlockULong.cs" />
-    <Compile Include="Resources\BBS\BlockUShort.cs" />
     <Compile Include="Resources\File.cs" />
     <Compile Include="Resources\FileAccess.cs" />
     <Compile Include="Resources\FileInfo.cs" />
     <Compile Include="Resources\FileMode.cs" />
     <Compile Include="Resources\FileSystem.cs" />
     <Compile Include="Resources\FileSystemWindows.cs" />
-    <Compile Include="Resources\PAK\PakEntry.cs" />
-    <Compile Include="Resources\PAK\PakEntryFlags.cs" />
-    <Compile Include="Resources\PAK\PakFile.cs" />
-    <Compile Include="Resources\PAK\PakStream.cs" />
     <Compile Include="Resources\ResourceManager.cs" />
     <Compile Include="SceneGraph.cs" />
     <Compile Include="Scripting\Command.cs" />
@@ -128,11 +83,14 @@
     <Compile Include="Scripting\ScriptingInterface.cs" />
     <Compile Include="Scripting\Arg.cs" />
     <Compile Include="Scripting\ArgType.cs" />
-    <Compile Include="Utils\ByteConverter.cs" />
-    <Compile Include="Utils\Memory.cs" />
-    <Compile Include="Utils\StreamExtensions.cs" />
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{7bf6a7bc-3b48-4c3f-85af-88d48791295e}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

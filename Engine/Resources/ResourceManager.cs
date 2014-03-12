@@ -2,8 +2,8 @@
 using System.IO;
 using System.Collections.Generic;
 
-using DarkTech.Engine.Resources.PAK;
-using DarkTech.Engine.Utils;
+using DarkTech.Common.PAK;
+using DarkTech.Common.Utils;
 
 namespace DarkTech.Engine.Resources
 {
