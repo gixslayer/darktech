@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using DarkTech.Engine.Resources;
-using DarkTech.Engine.Resources.BBS;
+using DarkTech.Common.Debug;
 
 namespace EngineTest
 {
@@ -13,37 +12,18 @@ namespace EngineTest
     {
         static void Main(string[] args)
         {
-            ResourceManager manager = new ResourceManager();
+            Console.WriteLine("start");
 
-            manager.RegisterResourceLoader<Resource>(new Loader());
+            List<object> a = new List<object>();
+            List<object> b = new List<object>();
+            List<object> c = a;
 
-            Console.WriteLine(manager.HasResourceLoader<Resource>());
+            Assert.ReferenceEquals(a, c, "fail");
 
-            Block block = Block.CreateFromType(BlockType.String);
-
-            Console.WriteLine(block is BlockString);
+            Assert.GreaterOrEqual(5, 6, "fail");
 
             Console.WriteLine("DONE");
             Console.Read();
-        }
-    }
-
-    class Resource : Resource
-    {
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    class Loader : ResourceLoader<Resource>
-    {
-
-        public override bool Load(DarkTech.Engine.Resources.PAK.PakStream stream, out Resource result)
-        {
-            result = new Resource();
-
-            return true;
         }
     }
 }

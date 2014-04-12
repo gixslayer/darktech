@@ -76,6 +76,16 @@
     <Compile Include="BBS\BlockULongArray.cs" />
     <Compile Include="BBS\BlockUShort.cs" />
     <Compile Include="BBS\BlockUShortArray.cs" />
+    <Compile Include="Debug\Assert.cs" />
+    <Compile Include="Debug\Profiler.cs" />
+    <Compile Include="Network\Packet.cs" />
+    <Compile Include="IO\DataBufferException.cs" />
+    <Compile Include="IO\DataBufferMode.cs" />
+    <Compile Include="Network\PacketException.cs" />
+    <Compile Include="Network\PacketFlags.cs" />
+    <Compile Include="IO\DataBuffer.cs" />
+    <Compile Include="Network\UDPClient.cs" />
+    <Compile Include="Network\UDPClientWindows.cs" />
     <Compile Include="PAK\PakEntry.cs" />
     <Compile Include="PAK\PakEntryFlags.cs" />
     <Compile Include="PAK\PakException.cs" />
@@ -84,9 +94,12 @@
     <Compile Include="Utils\ByteConverter.cs" />
     <Compile Include="Utils\IndentWriter.cs" />
     <Compile Include="Utils\Memory.cs" />
+    <Compile Include="Utils\NumberGenerator.cs" />
+    <Compile Include="Utils\OverflowMode.cs" />
     <Compile Include="Utils\StreamException.cs" />
     <Compile Include="Utils\StreamExtensions.cs" />
     <Compile Include="Utils\SubStream.cs" />
+    <Compile Include="Utils\UIntGenerator.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

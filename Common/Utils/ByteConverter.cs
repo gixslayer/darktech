@@ -1,9 +1,52 @@
-﻿namespace DarkTech.Common.Utils
+﻿using System;
+using System.Collections.Generic;
+
+namespace DarkTech.Common.Utils
 {
     public unsafe class ByteConverter
     {
-        private const byte BOOL_TRUE = 0xff;
-        private const byte BOOL_FALSE = 0x0;
+        public const byte BOOL_TRUE = 0xff;
+        public const byte BOOL_FALSE = 0x0;
+
+        private static readonly Dictionary<Type, Delegate> DELEGATE_MAPPING = new Dictionary<Type, Delegate>();
+        private static readonly Dictionary<Type, int> SIZE_MAPPING = new Dictionary<Type, int>();
+
+        private delegate T ToDelegate<T>(byte[] buffer, int offset);
+
+        static ByteConverter()
+        {
+            DELEGATE_MAPPING.Add(typeof(bool), new ToDelegate<bool>(ToBool));
+            DELEGATE_MAPPING.Add(typeof(char), new ToDelegate<char>(ToChar));
+            DELEGATE_MAPPING.Add(typeof(short), new ToDelegate<short>(ToShort));
+            DELEGATE_MAPPING.Add(typeof(ushort), new ToDelegate<ushort>(ToUShort));
+            DELEGATE_MAPPING.Add(typeof(int), new ToDelegate<int>(ToInt));
+            DELEGATE_MAPPING.Add(typeof(uint), new ToDelegate<uint>(ToUInt));
+            DELEGATE_MAPPING.Add(typeof(float), new ToDelegate<float>(ToFloat));
+            DELEGATE_MAPPING.Add(typeof(long), new ToDelegate<long>(ToLong));
+            DELEGATE_MAPPING.Add(typeof(ulong), new ToDelegate<ulong>(ToULong));
+            DELEGATE_MAPPING.Add(typeof(double), new ToDelegate<double>(ToDouble));
+
+            SIZE_MAPPING.Add(typeof(byte), 1);
+            SIZE_MAPPING.Add(typeof(sbyte), 1);
+            SIZE_MAPPING.Add(typeof(bool), 1);
+            SIZE_MAPPING.Add(typeof(char), 2);
+            SIZE_MAPPING.Add(typeof(short), 2);
+            SIZE_MAPPING.Add(typeof(ushort), 2);
+            SIZE_MAPPING.Add(typeof(int), 4);
+            SIZE_MAPPING.Add(typeof(uint), 4);
+            SIZE_MAPPING.Add(typeof(float), 4);
+            SIZE_MAPPING.Add(typeof(long), 8);
+            SIZE_MAPPING.Add(typeof(ulong), 8);
+            SIZE_MAPPING.Add(typeof(double), 8);
+        }
+
+        public static int GetSize<T>() where T : struct
+        {
+            if (!SIZE_MAPPING.ContainsKey(typeof(T)))
+                throw new ArgumentException("Could not find size mapping for generic type");
+
+            return SIZE_MAPPING[typeof(T)];
+        }
 
         #region GetBytes
         #region Return
@@ -222,6 +265,16 @@
             value |= (ulong)buffer[offset] << 56;
 
             return value;
+        }
+
+        public static T To<T>(byte[] buffer, int offset) where T : struct
+        {
+            if (!DELEGATE_MAPPING.ContainsKey(typeof(T)))
+                throw new ArgumentException("Could not find delegate mapping for generic type");
+
+            ToDelegate<T> del = (ToDelegate<T>)DELEGATE_MAPPING[typeof(T)];
+
+            return del(buffer, offset);
         }
         #endregion
     }

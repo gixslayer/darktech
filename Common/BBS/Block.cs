@@ -5,6 +5,7 @@ using System.IO;
 using System.Reflection;
 
 using DarkTech.Common.Utils;
+using DarkTech.Common.Debug;
 
 namespace DarkTech.Common.BBS
 {
@@ -35,12 +36,12 @@ namespace DarkTech.Common.BBS
                     }
                     else
                     {
-                        Debug.Fail("Duplicate type mapping", "Duplicate type mapping for Block " + block.Type.ToString());
+                        Assert.Fail("Duplicate type mapping for Block " + block.Type.ToString());
                     }
                 }
                 catch (Exception e)
                 {
-                    Debug.Fail("Failed to create instance for type", "Failed to create instance for Block type " + type.FullName + " > " + e.Message);
+                    Assert.Fail("Failed to create instance for Block type " + type.FullName + " > " + e.Message);
                 }
             }
         }
