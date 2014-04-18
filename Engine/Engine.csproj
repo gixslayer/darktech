@@ -46,6 +46,8 @@
     <Compile Include="Math\Vector2f.cs" />
     <Compile Include="Math\Vector3f.cs" />
     <Compile Include="Math\Vector4f.cs" />
+    <Compile Include="Network\UDPSocket.cs" />
+    <Compile Include="Network\UDPSocketWindows.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\ResourceLoader.cs" />
