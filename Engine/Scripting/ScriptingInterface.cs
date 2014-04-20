@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using DarkTech.Engine.Math;
+using DarkTech.Common.Math;
 
 namespace DarkTech.Engine.Scripting
 {

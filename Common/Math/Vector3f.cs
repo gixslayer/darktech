@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace DarkTech.Engine.Math
+namespace DarkTech.Common.Math
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
     public unsafe struct Vector3f : IComparable<Vector3f>

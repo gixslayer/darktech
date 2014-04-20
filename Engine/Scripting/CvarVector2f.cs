@@ -1,4 +1,4 @@
-﻿using DarkTech.Engine.Math;
+﻿using DarkTech.Common.Math;
 
 namespace DarkTech.Engine.Scripting
 {

@@ -1,9 +1,11 @@
 ﻿using SMath = System.Math;
 
-namespace DarkTech.Engine.Math
+namespace DarkTech.Common.Math
 {
     public static class MathHelper
     {
+        public const float PI = 3.1415927f;
+
         public static float Sqrt(float value)
         {
             return (float)SMath.Sqrt(value);
@@ -148,6 +150,28 @@ namespace DarkTech.Engine.Math
         public static float Pow(float val, float pow)
         {
             return (float)SMath.Pow(val, pow);
+        }
+
+        public static int Floor(float value)
+        {
+            return (int)value;
+        }
+
+        public static float Fract(float value)
+        {
+            return value - Floor(value);
+        }
+
+        public static float Lerp(float x, float y, float r)
+        {
+            return x * (1.0f - r) + y * r;
+        }
+
+        public static float Cerp(float x, float y, float r)
+        {
+            float f = (1.0f - Cos(r * PI)) * 0.5f;
+
+            return x * (1.0f - f) + y * f;
         }
     }
 }

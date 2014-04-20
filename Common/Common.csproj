@@ -78,6 +78,14 @@
     <Compile Include="BBS\BlockUShortArray.cs" />
     <Compile Include="Debug\Assert.cs" />
     <Compile Include="Debug\Profiler.cs" />
+    <Compile Include="Math\MathHelper.cs" />
+    <Compile Include="Math\Noise\FractalNoise.cs" />
+    <Compile Include="Math\Noise\InterpolatedNoise.cs" />
+    <Compile Include="Math\Noise\NoiseGenerator.cs" />
+    <Compile Include="Math\Noise\ValueNoiseGenerator.cs" />
+    <Compile Include="Math\Vector2f.cs" />
+    <Compile Include="Math\Vector3f.cs" />
+    <Compile Include="Math\Vector4f.cs" />
     <Compile Include="Network\Packet.cs" />
     <Compile Include="IO\DataBufferException.cs" />
     <Compile Include="IO\DataBufferMode.cs" />
