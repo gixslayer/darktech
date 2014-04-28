@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 
 using DarkTech.Common.Utils;
+using DarkTech.Common.IO;
 
 namespace DarkTech.Common.PAK
 {
@@ -76,6 +77,24 @@ namespace DarkTech.Common.PAK
             else
             {
                 return pakStream;
+            }
+        }
+
+        public void Extract(PakEntry entry, Stream dest)
+        {
+            stream.Position = entry.Offset;
+            byte[] buffer = new byte[4096];
+            long bytesRemaining = entry.Size;
+
+            while (bytesRemaining > 0)
+            {
+                int bytesToRead = bytesRemaining < buffer.Length ? (int)bytesRemaining : buffer.Length;
+
+                stream.Read(buffer, 0, bytesToRead);
+
+                dest.Write(buffer, 0, bytesToRead);
+
+                bytesRemaining -= bytesToRead;
             }
         }
     }

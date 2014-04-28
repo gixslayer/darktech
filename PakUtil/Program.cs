@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
-using DarkTech.Engine.Resources.PAK;
+using DarkTech.Common.PAK;
 
 namespace DarkTech.PakUtil
 {
@@ -13,21 +11,17 @@ namespace DarkTech.PakUtil
         private static string[] args;
         private delegate void CmdArgHandler();
 
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
         static void Main()
         {
             // Build the command line handling system.
             Dictionary<string, CmdArg> commandArgs = new Dictionary<string, CmdArg>();
-            commandArgs.Add("-cli", new CmdArg(0, StartCLI));
-            commandArgs.Add("-c", new CmdArg(2, Create));
+            //commandArgs.Add("-cli", new CmdArg(0, StartCLI));
+            commandArgs.Add("-c", new CmdArg(3, Create));
             commandArgs.Add("-e", new CmdArg(2, ExtractAll));
-            commandArgs.Add("-E", new CmdArg(3, Extract));
-            commandArgs.Add("-a", new CmdArg(3, Add));
-            commandArgs.Add("-r", new CmdArg(2, Remove));
-            commandArgs.Add("-R", new CmdArg(3, Rename));
+            //commandArgs.Add("-E", new CmdArg(3, Extract));
+            //commandArgs.Add("-a", new CmdArg(3, Add));
+            //commandArgs.Add("-r", new CmdArg(2, Remove));
+            //commandArgs.Add("-R", new CmdArg(3, Rename));
             commandArgs.Add("-d", new CmdArg(1, Dump));
             commandArgs.Add("-h", new CmdArg(0, PrintHelp));
 
@@ -61,41 +55,42 @@ namespace DarkTech.PakUtil
             {
                 // Copy the arguments following the program name to a new static array.
                 args = new string[commandLineArguments.Length - 1];
-                commandLineArguments.CopyTo(args, 1);
+                
+                //commandLineArguments.CopyTo(args, 1);
 
-                if (commandArgs.ContainsKey(args[0]))
+                for (int i = 0; i < args.Length; i++)
                 {
-                    // Check if the argument count is correct.
-                    if (args.Length - 1 < commandArgs[args[0]].ArgCount)
+                    args[i] = commandLineArguments[i + 1];
+                }
+
+                    if (commandArgs.ContainsKey(args[0]))
                     {
-                        PrintHelp();
+                        // Check if the argument count is correct.
+                        if (args.Length - 1 < commandArgs[args[0]].ArgCount)
+                        {
+                            PrintHelp();
+                        }
+                        else
+                        {
+                            // Invoke the handler.
+                            commandArgs[args[0]].Handler.Invoke();
+                        }
+
+                        // Exit the application before the GUI is launched.
+                        Environment.Exit(0);
                     }
                     else
                     {
-                        // Invoke the handler.
-                        commandArgs[args[0]].Handler.Invoke();
-                    }
+                        // The argument is considered to be a location to a valid pak file. 
+                        // Load the pak file to verify this and if loaded correctly set a static variable in the GUI so it knows it has to display that pak file.
+                        PakFile pakFile;
 
-                    // Exit the application before the GUI is launched.
-                    Environment.Exit(0);
-                }
-                else
-                {
-                    // The argument is considered to be a location to a valid pak file. 
-                    // Load the pak file to verify this and if loaded correctly set a static variable in the GUI so it knows it has to display that pak file.
-                    PakFile pakFile;
-
-                    if (OpenPak(args[0], out pakFile))
-                    {
-                        // TODO: Set static variable in GUI.
+                        if (OpenPak(args[0], out pakFile))
+                        {
+                            // TODO: Set static variable in GUI.
+                        }
                     }
-                }
             }
-
-            // Launch the GUI.
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
         }
 
         private static void StartCLI()
@@ -105,12 +100,81 @@ namespace DarkTech.PakUtil
 
         private static void Create()
         {
+            FileStream outStream = new FileStream(args[1], FileMode.Create, FileAccess.Write);
+            PakEntryFlags flags;
 
+            if (!args[2].EndsWith("\\"))
+            {
+                args[2] += "\\";
+            }
+
+            if (args[3] == "gzip")
+            {
+                flags = PakEntryFlags.GZip;
+            }
+            else if (args[3] == "deflate")
+            {
+                flags = PakEntryFlags.Deflate;
+            }
+            else
+            {
+                flags = PakEntryFlags.None;
+            }
+
+            foreach (string file in Directory.GetFiles(args[2], "*", SearchOption.AllDirectories))
+            {
+                string entryName = file.Substring(args[2].Length);
+
+                FileStream source = new FileStream(file, FileMode.Open, FileAccess.Read);
+
+                PakEntry.Serialize(outStream, source, entryName, flags);
+
+                source.Close();
+                source.Dispose();
+            }
+
+            outStream.Close();
+            outStream.Dispose();
         }
 
         private static void ExtractAll()
         {
+            FileStream pakStream = new FileStream(args[1], FileMode.Open, FileAccess.Read);
+            PakFile pak = new PakFile(pakStream);
 
+            foreach (PakEntry entry in pak.Entries)
+            {
+                string fullPath = Path.Combine(args[2], entry.Name);
+
+                DirectoryInfo directory = Directory.GetParent(fullPath);
+
+                if (!directory.Exists)
+                {
+                    directory.Create();
+                }
+
+                Stream entryStream = pak.GetEntryStream(entry.Name);
+
+                FileStream dest = new FileStream(fullPath, FileMode.Create, FileAccess.Write);
+
+               byte[] buffer = new byte[4096];
+
+                while (true)
+                {
+                    int bytesRead = entryStream.Read(buffer, 0, buffer.Length);
+
+                    if (bytesRead == 0) break;
+
+                    dest.Write(buffer, 0, bytesRead);
+                }
+
+                //pak.Extract(entry, dest);
+
+                dest.Close();
+                dest.Dispose();
+            }
+
+            pak.Close();
         }
 
         private static void Extract()
@@ -144,13 +208,11 @@ namespace DarkTech.PakUtil
 
             Console.WriteLine("Dumping information for pak file {0}", args[1]);
             Console.WriteLine("Entries: {0}", pakFile.EntryCount);
+            int i = 0;
 
-            PakEntry[] entries = pakFile.GetEntries();
-            for (int i = 0; i < pakFile.EntryCount; i++)
+            foreach (PakEntry entry in pakFile.Entries)
             {
-                PakEntry entry = entries[i];
-
-                Console.WriteLine("{0}\t{1}\t({2}) @ {3} -> {4} bytes", i, entry.Name, (byte)entry.Flags, entry.Offset, entry.Size);
+                Console.WriteLine("{0}\t{1}\t({2}) @ {3} -> {4} bytes", i++, entry.Name, (byte)entry.Flags, entry.Offset, entry.Size);
             }
 
             pakFile.Close();
@@ -203,19 +265,18 @@ namespace DarkTech.PakUtil
                 return false;
             }
 
-            pakFile = new PakFile();
-
-            if (!pakFile.Load(fileStream))
+            try
             {
-                fileStream.Close();
-                fileStream.Dispose();
+                pakFile = new PakFile(fileStream);
 
-                Console.Error.WriteLine("Could not open pak file {0}", path);
+                return true;
+            }
+            catch (PakException e)
+            {
+                Console.WriteLine("Failed to open pak file {0} > {1}", path, e.Message);
 
                 return false;
             }
-
-            return true;
         }
 
         private class CmdArg

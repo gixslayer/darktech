@@ -186,7 +186,7 @@ namespace DarkTech.Common.Utils
             stream.Write(ByteConverter.GetBytes(value));
         }
 
-        public static uint CopyToEx(this Stream stream, Stream dest)
+        /*public static uint CopyToEx(this Stream stream, Stream dest)
         {
             uint bytesWritten = 0;
             byte[] buffer = new byte[4096];
@@ -200,6 +200,6 @@ namespace DarkTech.Common.Utils
             }
 
             return bytesWritten;
-        }
+        }*/
     }
 }

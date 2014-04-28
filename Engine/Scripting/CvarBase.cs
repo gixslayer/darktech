@@ -1,8 +1,13 @@
-﻿namespace DarkTech.Engine.Scripting
+﻿using System.Collections.Generic;
+
+namespace DarkTech.Engine.Scripting
 {
+    public delegate void CvarCallback<T>(string name, T oldValue, T newValue);
+
     public abstract class CvarBase<T> : Cvar
     {
         private T value;
+        private readonly List<CvarCallback<T>> callbacks;
 
         public T DefaultValue { get; private set; }
         public T Value
@@ -15,6 +20,15 @@
         {
             this.value = defaultValue;
             this.DefaultValue = defaultValue;
+            this.callbacks = new List<CvarCallback<T>>();
+        }
+
+        public void RegisterCallback(CvarCallback<T> callback)
+        {
+            if (callback == null)
+                throw new System.ArgumentNullException("callback");
+
+            callbacks.Add(callback);
         }
 
         public void Reset()
@@ -82,9 +96,16 @@
 
             if (!this.value.Equals(value))
             {
+                T oldValue = this.value;
+
                 this.value = value;
 
                 SetFlag(CvarFlag.Modified);
+
+                foreach (CvarCallback<T> callback in callbacks)
+                {
+                    callback(Name, oldValue, value);
+                }
             }
         }
 

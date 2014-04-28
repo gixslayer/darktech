@@ -78,6 +78,7 @@
     <Compile Include="BBS\BlockUShortArray.cs" />
     <Compile Include="Debug\Assert.cs" />
     <Compile Include="Debug\Profiler.cs" />
+    <Compile Include="IO\SubStream.cs" />
     <Compile Include="Math\MathHelper.cs" />
     <Compile Include="Math\Noise\FractalNoise.cs" />
     <Compile Include="Math\Noise\InterpolatedNoise.cs" />
@@ -106,7 +107,6 @@
     <Compile Include="Utils\OverflowMode.cs" />
     <Compile Include="Utils\StreamException.cs" />
     <Compile Include="Utils\StreamExtensions.cs" />
-    <Compile Include="Utils\SubStream.cs" />
     <Compile Include="Utils\UIntGenerator.cs" />
   </ItemGroup>
   <ItemGroup />

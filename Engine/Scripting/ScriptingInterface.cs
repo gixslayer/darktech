@@ -207,6 +207,16 @@ namespace DarkTech.Engine.Scripting
         {
             return GetCvar(name).ToString();
         }
+
+        public void RegisterCvarCallback<T>(string name, CvarCallback<T> callback)
+        {
+            if (!IsCvarRegistered(name))
+                throw new ArgumentException("Cvar is not registered", "name");
+            if (!(cvars[name] is CvarBase<T>))
+                throw new ArgumentException("Cvar/Callback type mismatch");
+
+            ((CvarBase<T>)cvars[name]).RegisterCallback(callback);
+        }
         #endregion
 
         #region Execute
