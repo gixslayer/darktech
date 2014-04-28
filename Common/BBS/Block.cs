@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
-using DarkTech.Common.Utils;
+using DarkTech.Common.IO;
 using DarkTech.Common.Debug;
 
 namespace DarkTech.Common.BBS

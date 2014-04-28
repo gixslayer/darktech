@@ -2,16 +2,36 @@
 using System.IO.Compression;
 using System.Text;
 
-using DarkTech.Common.Utils;
 using DarkTech.Common.IO;
 
 namespace DarkTech.Common.PAK
 {
+    /// <summary>
+    /// Represents an entry within a <see cref="PakFile"/>.
+    /// </summary>
     public sealed class PakEntry
     {
+        private const byte PADDING = 0x0;
+        private static readonly Encoding ENCODING = Encoding.UTF8;
+
+        /// <summary>
+        /// The name of the package entry.
+        /// </summary>
         public string Name { get; private set; }
+        /// <summary>
+        /// The flags of the package entry.
+        /// </summary>
         public PakEntryFlags Flags { get; private set; }
+        /// <summary>
+        /// The size of the package entry data.
+        /// </summary>
+        /// <remarks>
+        /// If the entry is compressed this represents the size of the compressed data.
+        /// </remarks>
         public long Size { get; private set; }
+        /// <summary>
+        /// The offset to the start of the package entry data.
+        /// </summary>
         public long Offset { get; private set; }
 
         private PakEntry(string name, PakEntryFlags flags, long size, long offset) 
@@ -22,6 +42,11 @@ namespace DarkTech.Common.PAK
             this.Offset = offset;
         }
 
+        /// <summary>
+        /// De-serializes a package entry from a stream.
+        /// </summary>
+        /// <param name="stream">The stream to deserialize from.</param>
+        /// <returns>A new <see cref="PakEntry"/> instance deserialized from the <paramref name="stream"/> stream.</returns>
         public static PakEntry Deserialize(Stream stream)
         {
             ushort nameLength = stream.ReadUShort();
@@ -34,15 +59,8 @@ namespace DarkTech.Common.PAK
             if (!stream.SaveRead(nameBuffer))
                 throw PakException.UNEXPECTED_EOS;
 
-            string name = Encoding.UTF8.GetString(nameBuffer);
+            string name = ENCODING.GetString(nameBuffer);
             PakEntryFlags flags = (PakEntryFlags)stream.ReadByteEx();
-
-            // Read the padding (if any).
-            if (flags.HasFlag(PakEntryFlags.Padded))
-            {
-                ReadPadding(stream);
-            }
-
             long size = stream.ReadUInt();
             long offset = stream.Position;
 
@@ -54,43 +72,16 @@ namespace DarkTech.Common.PAK
             return new PakEntry(name, flags, size, offset);
         }
 
-        private static void ReadPadding(Stream stream)
-        {
-            byte lowByte = stream.ReadByteEx();
-
-            if (lowByte == 0)
-            {
-                return;
-            }
-
-            byte highByte = stream.ReadByteEx();
-
-            int paddingLength = lowByte + highByte * 256;
-        }
-
-        private static void WritePadding(Stream stream, int padding)
-        {
-            if (padding <= 0)
-                throw new System.ArgumentOutOfRangeException("padding");
-
-            if (padding <= 256)
-            {
-                int zeroPadding = padding - 1;
-
-                // Write how many zero bytes padding follow (0-255).
-                stream.WriteByte((byte)zeroPadding);
-
-                for (int i = 0; i < zeroPadding; i++)
-                {
-                    stream.WriteByte(0);
-                }
-            }
-        }
-
+        /// <summary>
+        /// Serializes a package entry to a stream.
+        /// </summary>
+        /// <param name="stream">The stream to serialize to.</param>
+        /// <param name="source">The stream that contains the package entry data.</param>
+        /// <param name="name">The name of the package entry.</param>
+        /// <param name="flags">The flags of the package entry.</param>
         public static void Serialize(Stream stream, Stream source, string name, PakEntryFlags flags)
         {
-            byte[] buffer = new byte[4096];
-            byte[] nameBuffer = Encoding.UTF8.GetBytes(name);
+            byte[] nameBuffer = ENCODING.GetBytes(name);
 
             stream.WriteUShort((ushort)nameBuffer.Length);
             stream.Write(nameBuffer);
@@ -98,7 +89,8 @@ namespace DarkTech.Common.PAK
 
             long sizeOffset = stream.Position;
 
-            stream.WriteUInt(0); // Fill in the bytes so they can be overwritten later on.
+            // Fill in the bytes so they can be overwritten later on.
+            stream.WriteUInt(0);
 
             Stream dest = CreateDestStream(stream, flags);
 

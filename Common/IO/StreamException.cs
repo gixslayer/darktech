@@ -1,4 +1,4 @@
-﻿namespace DarkTech.Common.Utils
+﻿namespace DarkTech.Common.IO
 {
     public class StreamException : System.Exception
     {

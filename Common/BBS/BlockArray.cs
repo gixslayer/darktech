@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-using DarkTech.Common.Utils;
+using DarkTech.Common.IO;
 
 namespace DarkTech.Common.BBS
 {

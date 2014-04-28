@@ -1,6 +1,8 @@
 ﻿using System.IO;
 
-namespace DarkTech.Common.Utils
+using DarkTech.Common.Utils;
+
+namespace DarkTech.Common.IO
 {
     public static class StreamExtensions
     {

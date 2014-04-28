@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace DarkTech.Common.Utils
+namespace DarkTech.Common.IO
 {
     public class IndentWriter
     {

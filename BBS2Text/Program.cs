@@ -2,7 +2,7 @@
 using System.IO;
 
 using DarkTech.Common.BBS;
-using DarkTech.Common.Utils;
+using DarkTech.Common.IO;
 
 namespace DarkTech.BBS2Text
 {
