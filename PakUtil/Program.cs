@@ -8,156 +8,82 @@ namespace DarkTech.PakUtil
 {
     static class Program
     {
-        private static string[] args;
-        private delegate void CmdArgHandler();
+        static string[] args;
 
-        static void Main()
+        static void Main(string[] args)
         {
-            // Build the command line handling system.
-            Dictionary<string, CmdArg> commandArgs = new Dictionary<string, CmdArg>();
-            //commandArgs.Add("-cli", new CmdArg(0, StartCLI));
-            commandArgs.Add("-c", new CmdArg(3, Create));
-            commandArgs.Add("-e", new CmdArg(2, ExtractAll));
-            //commandArgs.Add("-E", new CmdArg(3, Extract));
-            //commandArgs.Add("-a", new CmdArg(3, Add));
-            //commandArgs.Add("-r", new CmdArg(2, Remove));
-            //commandArgs.Add("-R", new CmdArg(3, Rename));
-            commandArgs.Add("-d", new CmdArg(1, Dump));
-            commandArgs.Add("-h", new CmdArg(0, PrintHelp));
+            Dictionary<string, Command> commands = new Dictionary<string, Command>();
 
-            // Functionality:
-            // Both GUI and CLI
-            // Create new pak files from a source directory.
-            // Add file(s) to an existing pak file.
-            // Remove file(s) from an existing pak file.
-            // Rename file(s) in an existing pak file.
-            // Extract file(s) from an existing pak file.
-            // Dump info from an existing pak file.
+            commands.Add("-c", new Command(new Action<string, string, string>(CreatePackage), "-if", "-of", "-c"));
+            commands.Add("-e", new Command(new Action<string, string>(ExtractPackage), "-if", "-of"));
+            commands.Add("-C", new Command(new Action<string, string>(CleanPackage), "-if", "-of"));
+            commands.Add("-E", new Command(new Action<string, string, string>(ExtractEntry), "-if", "-e", "-of"));
+            commands.Add("-a", new Command(new Action<string, string, string, string>(AddEntry), "-of", "-if", "-e", "-c"));
+            commands.Add("-d", new Command(new Action<string, string>(DeleteEntry), "-if", "-e"));
+            commands.Add("-l", new Command(new Action<string>(ListEntries), "-if"));
+            commands.Add("-h", new Command(new Action(PrintHelp)));
 
-            // Command line args:
-            // [] means that the arguments can be repetitive and should be treated as a list/array.
-            // -cli                     Starts the interactive cli.
-            // -c source dest           Creates a new pak file and adds all files in the source directory then saves it to dest.
-            // -e source dest           Extract the all entries in the source pak file to the dest directory.
-            // -E source [entry dest]   Extract the entry in the source pak file to the dest path.
-            // -a source [entry path]   Adds the file at path to the source pak file under the name entry.
-            // -r source [entry]        Removes the entry from the source pak file.
-            // -R source [entry name]   Renames the entry to name in the source pak file.
-            // -d source                Dumps information about the source pak file to stdout.
-            // -h                       Print help.
-            // source                   Opens the source pak file in GUI mode.
-
-            // First command line argument is the program name.
-            string[] commandLineArguments = Environment.GetCommandLineArgs();
-
-            // If there is more than one argument, additional command line args were passed in that need to be handled.
-            if (commandLineArguments.Length > 1)
+            if (args == null || args.Length == 0) 
             {
-                // Copy the arguments following the program name to a new static array.
-                args = new string[commandLineArguments.Length - 1];
-                
-                //commandLineArguments.CopyTo(args, 1);
+                args = new string[] { "-h" };
+            }
 
-                for (int i = 0; i < args.Length; i++)
+            Command command = null;
+
+            if (commands.ContainsKey(args[0]))
+            {
+                command = commands[args[0]];
+            }
+
+            if (command == null || !command.Invoke(args))
+            {
+                PrintHelp();
+            }
+
+            Console.Read();
+        }
+
+        private static void CreatePackage(string inputFile, string outputFile, string compression)
+        {
+            FileStream outputStream = new FileStream(outputFile, FileMode.Create, FileAccess.Write);
+            PakEntryFlags flags = DetectCompression(compression);
+
+            if (!inputFile.EndsWith("\\"))
+            {
+                inputFile += "\\";
+            }
+
+            foreach (string file in Directory.GetFiles(inputFile, "*", SearchOption.AllDirectories))
+            {
+                string entryName = file.Substring(inputFile.Length);
+                FileStream inputStream = new FileStream(file, FileMode.Open, FileAccess.Read);
+
+                PakEntry.Serialize(outputStream, inputStream, entryName, flags);
+
+                inputStream.Dispose();
+            }
+
+            outputStream.Dispose();
+        }
+
+        private static void ExtractPackage(string inputFile, string outputFile)
+        {
+            byte[] buffer = new byte[4096];
+            FileStream inputStream = new FileStream(inputFile, FileMode.Open, FileAccess.Read);
+            PakFile pakFile = new PakFile(inputStream);
+
+            foreach (PakEntry entry in pakFile.Entries)
+            {
+                string fullPath = Path.Combine(outputFile, entry.Name);
+                DirectoryInfo targetDirectory = Directory.GetParent(fullPath);
+
+                if (!targetDirectory.Exists)
                 {
-                    args[i] = commandLineArguments[i + 1];
+                    targetDirectory.Create();
                 }
 
-                    if (commandArgs.ContainsKey(args[0]))
-                    {
-                        // Check if the argument count is correct.
-                        if (args.Length - 1 < commandArgs[args[0]].ArgCount)
-                        {
-                            PrintHelp();
-                        }
-                        else
-                        {
-                            // Invoke the handler.
-                            commandArgs[args[0]].Handler.Invoke();
-                        }
-
-                        // Exit the application before the GUI is launched.
-                        Environment.Exit(0);
-                    }
-                    else
-                    {
-                        // The argument is considered to be a location to a valid pak file. 
-                        // Load the pak file to verify this and if loaded correctly set a static variable in the GUI so it knows it has to display that pak file.
-                        PakFile pakFile;
-
-                        if (OpenPak(args[0], out pakFile))
-                        {
-                            // TODO: Set static variable in GUI.
-                        }
-                    }
-            }
-        }
-
-        private static void StartCLI()
-        {
-
-        }
-
-        private static void Create()
-        {
-            FileStream outStream = new FileStream(args[1], FileMode.Create, FileAccess.Write);
-            PakEntryFlags flags;
-
-            if (!args[2].EndsWith("\\"))
-            {
-                args[2] += "\\";
-            }
-
-            if (args[3] == "gzip")
-            {
-                flags = PakEntryFlags.GZip;
-            }
-            else if (args[3] == "deflate")
-            {
-                flags = PakEntryFlags.Deflate;
-            }
-            else
-            {
-                flags = PakEntryFlags.None;
-            }
-
-            foreach (string file in Directory.GetFiles(args[2], "*", SearchOption.AllDirectories))
-            {
-                string entryName = file.Substring(args[2].Length);
-
-                FileStream source = new FileStream(file, FileMode.Open, FileAccess.Read);
-
-                PakEntry.Serialize(outStream, source, entryName, flags);
-
-                source.Close();
-                source.Dispose();
-            }
-
-            outStream.Close();
-            outStream.Dispose();
-        }
-
-        private static void ExtractAll()
-        {
-            FileStream pakStream = new FileStream(args[1], FileMode.Open, FileAccess.Read);
-            PakFile pak = new PakFile(pakStream);
-
-            foreach (PakEntry entry in pak.Entries)
-            {
-                string fullPath = Path.Combine(args[2], entry.Name);
-
-                DirectoryInfo directory = Directory.GetParent(fullPath);
-
-                if (!directory.Exists)
-                {
-                    directory.Create();
-                }
-
-                Stream entryStream = pak.GetEntryStream(entry.Name);
-
-                FileStream dest = new FileStream(fullPath, FileMode.Create, FileAccess.Write);
-
-               byte[] buffer = new byte[4096];
+                Stream entryStream = pakFile.GetEntryStream(entry.Name);
+                FileStream outputStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write);
 
                 while (true)
                 {
@@ -165,48 +91,71 @@ namespace DarkTech.PakUtil
 
                     if (bytesRead == 0) break;
 
-                    dest.Write(buffer, 0, bytesRead);
+                    outputStream.Write(buffer, 0, bytesRead);
                 }
 
-                //pak.Extract(entry, dest);
-
-                dest.Close();
-                dest.Dispose();
+                outputStream.Dispose();
             }
 
-            pak.Close();
+            inputStream.Dispose();
         }
 
-        private static void Extract()
+        private static void CleanPackage(string inputFile, string outputFile)
         {
-
+            // TODO: Implement.
         }
 
-        private static void Add()
+        private static void ExtractEntry(string inputFile, string entryName, string outputFile)
         {
+            FileStream inputStream = new FileStream(inputFile, FileMode.Open, FileAccess.Read);
+            PakFile pakFile = new PakFile(inputStream);
+            byte[] buffer = new byte[4096];
 
-        }
-
-        private static void Rename()
-        {
-
-        }
-
-        private static void Remove()
-        {
-
-        }
-
-        private static void Dump()
-        {
-            PakFile pakFile;
-
-            if (!OpenPak(args[1], out pakFile))
+            if (!pakFile.HasEntry(entryName))
             {
-                return;
+                Console.WriteLine("!!!ERROR!!! ExtractEntry::Could not find entry {0}", entryName);
+
+                Environment.Exit(1);
             }
 
-            Console.WriteLine("Dumping information for pak file {0}", args[1]);
+            Stream entryStream = pakFile.GetEntryStream(entryName);
+            FileStream outputStream = new FileStream(outputFile, FileMode.Create, FileAccess.Write);
+
+            while (true)
+            {
+                int bytesRead = entryStream.Read(buffer, 0, buffer.Length);
+
+                if (bytesRead == 0) break;
+
+                outputStream.Write(buffer, 0, bytesRead);
+            }
+
+            outputStream.Dispose();
+            inputStream.Dispose();
+        }
+
+        private static void AddEntry(string outputFile, string inputFile, string entryName, string compression)
+        {
+            FileStream outputStream = new FileStream(outputFile, FileMode.Append, FileAccess.Write);
+            FileStream inputStream = new FileStream(inputFile, FileMode.Open, FileAccess.Read);
+            PakEntryFlags flags = DetectCompression(compression);
+
+            PakEntry.Serialize(outputStream, inputStream, entryName, flags);
+
+            inputStream.Dispose();
+            outputStream.Dispose();
+        }
+
+        private static void DeleteEntry(string inputFile, string entryName)
+        {
+            // TODO: Implement.
+        }
+
+        private static void ListEntries(string inputFile)
+        {
+            FileStream inputStream = new FileStream(inputFile, FileMode.Open, FileAccess.Read);
+            PakFile pakFile = new PakFile(inputStream);
+
             Console.WriteLine("Entries: {0}", pakFile.EntryCount);
             int i = 0;
 
@@ -215,79 +164,111 @@ namespace DarkTech.PakUtil
                 Console.WriteLine("{0}\t{1}\t({2}) @ {3} -> {4} bytes", i++, entry.Name, (byte)entry.Flags, entry.Offset, entry.Size);
             }
 
-            pakFile.Close();
+            inputStream.Dispose();
         }
 
         private static void PrintHelp()
         {
-
+            // TODO: Implement.
         }
 
-        private static bool OpenStream(string path, FileMode mode, FileAccess access, out FileStream stream)
+        private static PakEntryFlags DetectCompression(string compression)
         {
-            stream = null;
-
-            if ((mode == FileMode.Open || mode == FileMode.Truncate) && !File.Exists(path))
+            switch (compression.ToLower())
             {
-                Console.Error.WriteLine("Could not find file {0}", path);
-
-                return false;
-            }
-
-            if (mode == FileMode.CreateNew && File.Exists(path))
-            {
-                Console.Error.WriteLine("The file {0} already exists", path);
-
-                return false;
-            }
-
-            try
-            {
-                stream = new FileStream(path, mode, access);
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine("Could not open file stream: {0}", e.Message);
-
-                return false;
+                case "gzip":
+                    return PakEntryFlags.GZip;
+                case "deflate":
+                    return PakEntryFlags.Deflate;
+                default:
+                    return PakEntryFlags.None;
             }
         }
 
-        private static bool OpenPak(string path, out PakFile pakFile)
+        class Command 
         {
-            pakFile = null;
-            FileStream fileStream;
+            private readonly Delegate target;
+            private readonly string[] namedArgs;
 
-            if (!OpenStream(path, FileMode.Open, FileAccess.Read, out fileStream))
+            public Command(Delegate target, params string[] namedArgs) 
             {
+                if (target.Method.GetParameters().Length != namedArgs.Length)
+                    throw new ArgumentException("Length must match delegate parameter length", "namedArgs");
+
+                this.target = target;
+                this.namedArgs = namedArgs;
+            }
+
+            public bool Invoke(string[] args)
+            {
+                int parameterCount = target.Method.GetParameters().Length;
+                string[] invokeArgs = new string[parameterCount];
+
+                for (int i = 0; i < invokeArgs.Length; i++)
+                {
+                    int index = FindParameterIndex(args, namedArgs[i]);
+
+                    if (index == -1)
+                    {
+                        return false;
+                    }
+
+                    invokeArgs[i] = args[index];
+                }
+
+                try
+                {
+                    switch (parameterCount)
+                    {
+                        case 0:
+                            target.DynamicInvoke();
+                            return true;
+
+                        case 1:
+                            target.DynamicInvoke(invokeArgs[0]);
+                            return true;
+
+                        case 2:
+                            target.DynamicInvoke(invokeArgs[0], invokeArgs[1]);
+                            return true;
+
+                        case 3:
+                            target.DynamicInvoke(invokeArgs[0], invokeArgs[1], invokeArgs[2]);
+                            return true;
+
+                        case 4:
+                            target.DynamicInvoke(invokeArgs[0], invokeArgs[1], invokeArgs[2], invokeArgs[3]);
+                            return true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("!!!ERROR!!! Exception::{0}", e.Message);
+
+                    Environment.Exit(1);
+                }
+
                 return false;
             }
 
-            try
+            private static int FindParameterIndex(string[] args, string arg)
             {
-                pakFile = new PakFile(fileStream);
+                int result = -1;
 
-                return true;
-            }
-            catch (PakException e)
-            {
-                Console.WriteLine("Failed to open pak file {0} > {1}", path, e.Message);
+                for (int i = 1; i < args.Length; i++)
+                {
+                    if (args[i] == arg)
+                    {
+                        if (i + 1 < args.Length)
+                        {
+                            result = i + 1;
+                        }
 
-                return false;
-            }
-        }
+                        return result;
+                    }
+                }
 
-        private class CmdArg
-        {
-            public int ArgCount { get; private set; }
-            public CmdArgHandler Handler { get; private set; }
-
-            public CmdArg(int argCount, CmdArgHandler handler)
-            {
-                this.ArgCount = argCount;
-                this.Handler = handler;
+                return result;
             }
         }
     }
