@@ -80,10 +80,6 @@
     <Compile Include="Debug\Profiler.cs" />
     <Compile Include="IO\SubStream.cs" />
     <Compile Include="Math\MathHelper.cs" />
-    <Compile Include="Math\Noise\FractalNoise.cs" />
-    <Compile Include="Math\Noise\InterpolatedNoise.cs" />
-    <Compile Include="Math\Noise\NoiseGenerator.cs" />
-    <Compile Include="Math\Noise\ValueNoiseGenerator.cs" />
     <Compile Include="Math\Vector2f.cs" />
     <Compile Include="Math\Vector3f.cs" />
     <Compile Include="Math\Vector4f.cs" />
@@ -93,8 +89,6 @@
     <Compile Include="Network\PacketException.cs" />
     <Compile Include="Network\PacketFlags.cs" />
     <Compile Include="IO\DataBuffer.cs" />
-    <Compile Include="Network\UDPClient.cs" />
-    <Compile Include="Network\UDPClientWindows.cs" />
     <Compile Include="PAK\PakEntry.cs" />
     <Compile Include="PAK\PakEntryFlags.cs" />
     <Compile Include="PAK\PakException.cs" />

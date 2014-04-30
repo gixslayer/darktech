@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-using DarkTech.Common.Math.Noise;
+//using DarkTech.Common.Math.Noise;
 
 namespace EngineTest
 {
@@ -71,7 +71,7 @@ namespace EngineTest
             Console.Read();
         }
 
-        static void Render(int seed, int sampleSize, int width, int height, string dest)
+        /*static void Render(int seed, int sampleSize, int width, int height, string dest)
         {
             Bitmap bmp = new Bitmap(width, height);
             NoiseGenerator noiseGen = new ValueNoiseGenerator(seed, sampleSize);
@@ -126,13 +126,13 @@ namespace EngineTest
                     int y2 = (int)(yRaw2 * (bmp.Height - 1));
 
                     g.DrawLine(foregroundColor, x, y, x + 1, y2);
-                }*/
+                }* /
 
             g.Dispose();
 
             bmp.Save(dest);
             bmp.Dispose();
-        }
+        }*/
 
         static float[][] NoiseMap(int size, int seed)
         {
