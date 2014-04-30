@@ -82,6 +82,7 @@ namespace DarkTech.Common.PAK
             }
         }
 
+        /// <summary>Returns the <see cref=" PakEntry"/> that is linked to the specified <paramref name="name"/>.</summary>
         /// <param name="name">The name of the package entry.</param>
         /// <returns>Returns the <see cref="PakEntry"/> that is linked to the specified <paramref name="name"/>.</returns>
         /// <exception cref="ArgumentException">
@@ -103,13 +104,15 @@ namespace DarkTech.Common.PAK
             stream.Dispose();
         }
 
+        /// <summary>Checks if an entry with the specified <paramref name="name"/> exists within the package.</summary>
         /// <param name="name">The name of the package entry.</param>
-        /// <returns>Returns a boolean value that indicates if an entry with the name <paramref name="name"/> exists within the package./</returns>
+        /// <returns>Returns <c>true</c> if an entry with the specified <paramref name="name"/> exists within the package, otherwise <c>false</c> is returned./</returns>
         public bool HasEntry(string name)
         {
             return entries.ContainsKey(name);
         }
 
+        /// <summary>Returns the <see cref="PakEntry"/> that is linked to the specified <paramref name="name"/>.</summary>
         /// <param name="name">The name of the package entry.</param>
         /// <returns>Returns the <see cref="PakEntry"/> that is linked to the specified <paramref name="name"/>.</returns>
         /// <exception cref="ArgumentException">
@@ -123,6 +126,7 @@ namespace DarkTech.Common.PAK
             return entries[name];
         }
 
+        /// <summary>Returns a stream that provides access to the package entry data.</summary>
         /// <param name="name">The name of the package entry.</param>
         /// <returns>Returns a stream that provides access to the package entry data.</returns>
         /// <exception cref="ArgumentException">
@@ -142,6 +146,7 @@ namespace DarkTech.Common.PAK
             return GetStreamForEntry(pakStream, entry);
         }
 
+        /// <summary>Returns a list of all entries found within the <paramref name="stream"/>.</summary>
         /// <param name="stream">The source stream that contains the package data.</param>
         /// <exception cref="PakException">
         /// Thrown when the specified <paramref name="stream"/> could not be loaded.

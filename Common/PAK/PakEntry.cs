@@ -46,8 +46,9 @@ namespace DarkTech.Common.PAK
             this.Offset = offset;
         }
 
+        /// <summary>Checks if the bitwise combination of flags in <paramref name="flag"/> is set to the on state.</summary>
         /// <param name="flag">The bitwise combination of flags to test.</param>
-        /// <returns>Returns a boolean value that indicates if the bitwise combination of flags in <paramref name="flag"/> is currently set.</returns>
+        /// <returns>Returns <c>true</c> if the bitwise combination of flags in <paramref name="flag"/> is currently set, otherwise <c>false</c> is returned.</returns>
         public bool HasFlag(PakEntryFlags flag)
         {
             return (Flags & flag) == flag;
