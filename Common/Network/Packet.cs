@@ -10,8 +10,6 @@ namespace DarkTech.Common.Network
         public const int HEADER_SIZE = 8;
         public const int MAX_PACKET_SIZE = 32768; // 32Kb.
 
-        private static readonly UIntGenerator ID_GENERATOR = new UIntGenerator(OverflowMode.Wrap);
-
         public ushort Type { get; private set; }
         public PacketFlags Flags { get; private set; }
         public uint Id { get; private set; }
@@ -50,7 +48,7 @@ namespace DarkTech.Common.Network
 
             buffer.Write(Type); // Packet type, 2 bytes.
             buffer.Write((ushort)Flags); // Packet flags, 2 bytes.
-            buffer.Write(ID_GENERATOR.Next()); // Packet id (unique), 4 bytes.
+            //buffer.Write(ID_GENERATOR.Next()); // Packet id (unique), 4 bytes.
             // Local time?
 
             SerializeData(buffer);

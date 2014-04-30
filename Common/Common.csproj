@@ -103,11 +103,8 @@
     <Compile Include="Utils\ByteConverter.cs" />
     <Compile Include="IO\IndentWriter.cs" />
     <Compile Include="Utils\Memory.cs" />
-    <Compile Include="Utils\NumberGenerator.cs" />
-    <Compile Include="Utils\OverflowMode.cs" />
     <Compile Include="IO\StreamException.cs" />
     <Compile Include="IO\StreamExtensions.cs" />
-    <Compile Include="Utils\UIntGenerator.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
