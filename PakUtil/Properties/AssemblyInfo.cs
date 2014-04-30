@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("PakUtil")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("A command line utility for package files")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("PakUtil")]
-[assembly: AssemblyCopyright("Copyright ©  2014")]
+[assembly: AssemblyCompany("DarkTech")]
+[assembly: AssemblyProduct("DarkTech")]
+[assembly: AssemblyCopyright("Copyright © DarkTech 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

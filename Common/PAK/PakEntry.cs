@@ -11,15 +11,19 @@ namespace DarkTech.Common.PAK
     /// </summary>
     public sealed class PakEntry
     {
+        /// <summary>
+        /// The encoding used for the <see cref="Name"/>.
+        /// </summary>
+        public static readonly Encoding ENCODING = Encoding.UTF8;
+
         private const byte PADDING = 0x0;
-        private static readonly Encoding ENCODING = Encoding.UTF8;
 
         /// <summary>
         /// The name of the package entry.
         /// </summary>
         public string Name { get; private set; }
         /// <summary>
-        /// The flags of the package entry.
+        /// The bitwise flags of the package entry.
         /// </summary>
         public PakEntryFlags Flags { get; private set; }
         /// <summary>
@@ -42,11 +46,39 @@ namespace DarkTech.Common.PAK
             this.Offset = offset;
         }
 
+        /// <param name="flag">The bitwise combination of flags to test.</param>
+        /// <returns>Returns a boolean value that indicates if the bitwise combination of flags in <paramref name="flag"/> is currently set.</returns>
+        public bool HasFlag(PakEntryFlags flag)
+        {
+            return (Flags & flag) == flag;
+        }
+
         /// <summary>
-        /// De-serializes a package entry from a stream.
+        /// Sets the bitwise combination of flags in <paramref name="flag"/> to the on state.
+        /// </summary>
+        /// <param name="flag">The bitwise combination of flags to set.</param>
+        public void SetFlag(PakEntryFlags flag)
+        {
+            Flags |= flag;
+        }
+
+        /// <summary>
+        /// Sets the bitwise combination of flags in <paramref name="flag"/> to the off state.
+        /// </summary>
+        /// <param name="flag">The bitwise combination of flags to clear.</param>
+        public void ClearFlag(PakEntryFlags flag)
+        {
+            Flags &= ~flag;
+        }
+
+        /// <summary>
+        /// De-serializes a package entry from a stream and advances past the entry data.
         /// </summary>
         /// <param name="stream">The stream to deserialize from.</param>
-        /// <returns>A new <see cref="PakEntry"/> instance deserialized from the <paramref name="stream"/> stream.</returns>
+        /// <returns>Returns a new <see cref="PakEntry"/> deserialized from the <paramref name="stream"/>.</returns>
+        /// <remarks>
+        /// Exceptions should be caught by the caller.
+        /// </remarks>
         public static PakEntry Deserialize(Stream stream)
         {
             ushort nameLength = stream.ReadUShort();
@@ -68,6 +100,9 @@ namespace DarkTech.Common.PAK
                 throw new PakException("Pak entry size must be at least 0 bytes long");
             if (offset + size > stream.Length)
                 throw new PakException("Pak entry size cannot exceed stream size");
+
+            // Advance past the actual data.
+            stream.Seek(size, SeekOrigin.Current);
 
             return new PakEntry(name, flags, size, offset);
         }
