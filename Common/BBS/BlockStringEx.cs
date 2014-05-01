@@ -2,12 +2,24 @@
 using System.Text;
 
 using DarkTech.Common.IO;
+using DarkTech.Common.Utils;
 
 namespace DarkTech.Common.BBS
 {
     public sealed class BlockStringEx : BlockData<string>
     {
         private const byte ENCODING_UNKNOWN = 255;
+        private static readonly LinkedMap<byte, Encoding> ENCODING_MAP = new LinkedMap<byte, Encoding>();
+
+        static BlockStringEx()
+        {
+            ENCODING_MAP.Add(0, Encoding.ASCII);
+            ENCODING_MAP.Add(1, Encoding.BigEndianUnicode);
+            ENCODING_MAP.Add(2, Encoding.Unicode);
+            ENCODING_MAP.Add(3, Encoding.UTF32);
+            ENCODING_MAP.Add(4, Encoding.UTF7);
+            ENCODING_MAP.Add(5, Encoding.UTF8);
+        }
 
         public Encoding Encoding { get; set; }
 
@@ -29,9 +41,11 @@ namespace DarkTech.Common.BBS
 
             byte[] buffer = Encoding.GetBytes(Value);
 
+            int length = buffer.Length > ushort.MaxValue ? ushort.MaxValue : buffer.Length;
+
             stream.WriteByte(encoding);
-            stream.WriteUShort((ushort)buffer.Length);
-            stream.Write(buffer);
+            stream.WriteUShort((ushort)length);
+            stream.Write(buffer, 0, length);
         }
 
         public override void Deserialize(Stream stream)
@@ -50,65 +64,19 @@ namespace DarkTech.Common.BBS
             Value = Encoding.GetString(buffer);
         }
 
-        // TODO: Fix this ugly code.
-        private static byte EncodingToByte(Encoding encoding)
+        public override Block Clone()
         {
-            if(encoding == Encoding.ASCII) 
-            {
-                return 0;
-            }
-            else if (encoding == Encoding.BigEndianUnicode)
-            {
-                return 1;
-            }
-            else if (encoding == Encoding.Unicode)
-            {
-                return 2;
-            }
-            else if (encoding == Encoding.UTF32)
-            {
-                return 3;
-            }
-            else if (encoding == Encoding.UTF7)
-            {
-                return 4;
-            }
-            else if (encoding == Encoding.UTF8)
-            {
-                return 5;
-            }
-
-            // Unknown encoding.
-            return ENCODING_UNKNOWN;
+            return new BlockStringEx(Value);
         }
 
-        // TODO: Fix this ugly code.
+        private static byte EncodingToByte(Encoding encoding)
+        {
+            return ENCODING_MAP.ContainsValue(encoding) ? ENCODING_MAP.GetByValue(encoding) : ENCODING_UNKNOWN;
+        }
+
         private static Encoding ByteToEncoding(byte value)
         {
-            switch (value)
-            {
-                case 0:
-                    return Encoding.ASCII;
-
-                case 1:
-                    return Encoding.BigEndianUnicode;
-
-                case 2:
-                    return Encoding.Unicode;
-
-                case 3:
-                    return Encoding.UTF32;
-
-                case 4:
-                    return Encoding.UTF7;
-
-                case 5:
-                    return Encoding.UTF8;
-
-                default:
-                    // Unknown encoding.
-                    return null;
-            }
+            return ENCODING_MAP.ContainsKey(value) ? ENCODING_MAP.GetByKey(value) : null;
         }
     }
 }

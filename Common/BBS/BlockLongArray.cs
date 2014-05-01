@@ -8,6 +8,7 @@ namespace DarkTech.Common.BBS
     {
         public BlockLongArray() : this(0) { }
         public BlockLongArray(int length) : base(BlockType.LongArray, length) { }
+        public BlockLongArray(long[] defaultValue) : base(BlockType.LongArray, defaultValue) { }
 
         protected override void SerializeElement(Stream stream, long element)
         {
@@ -17,6 +18,11 @@ namespace DarkTech.Common.BBS
         protected override long DeserializeElement(Stream stream)
         {
             return stream.ReadLong();
+        }
+
+        public override Block Clone()
+        {
+            return new BlockLongArray(Value);
         }
     }
 }

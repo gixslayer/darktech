@@ -8,6 +8,7 @@ namespace DarkTech.Common.BBS
     {
         public BlockUShortArray() : this(0) { }
         public BlockUShortArray(int length) : base(BlockType.UShortArray, length) { }
+        public BlockUShortArray(ushort[] defaultValue) : base(BlockType.UShortArray, defaultValue) { }
 
         protected override void SerializeElement(Stream stream, ushort element)
         {
@@ -17,6 +18,11 @@ namespace DarkTech.Common.BBS
         protected override ushort DeserializeElement(Stream stream)
         {
             return stream.ReadUShort();
+        }
+
+        public override Block Clone()
+        {
+            return new BlockUShortArray(Value);
         }
     }
 }

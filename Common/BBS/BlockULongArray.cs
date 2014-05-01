@@ -8,6 +8,7 @@ namespace DarkTech.Common.BBS
     {
         public BlockULongArray() : this(0) { }
         public BlockULongArray(int length) : base(BlockType.ULongArray, length) { }
+        public BlockULongArray(ulong[] defaultValue) : base(BlockType.ULongArray, defaultValue) { }
 
         protected override void SerializeElement(Stream stream, ulong element)
         {
@@ -17,6 +18,11 @@ namespace DarkTech.Common.BBS
         protected override ulong DeserializeElement(Stream stream)
         {
             return stream.ReadULong();
+        }
+
+        public override Block Clone()
+        {
+            return new BlockULongArray(Value);
         }
     }
 }

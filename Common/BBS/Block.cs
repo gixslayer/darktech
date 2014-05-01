@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
 using DarkTech.Common.IO;
-using DarkTech.Common.Debug;
 
 namespace DarkTech.Common.BBS
 {
@@ -15,51 +13,25 @@ namespace DarkTech.Common.BBS
 
         static Block()
         {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-
-            foreach (Type type in assembly.GetTypes())
-            {
-                if (!type.IsClass || type.IsAbstract)
-                    continue;
-                if (!type.IsSubclassOf(typeof(Block)))
-                    continue;
-                if (type.ContainsGenericParameters)
-                    continue;
-
-                try
-                {
-                    Block block = (Block)Activator.CreateInstance(type);
-
-                    if (!TYPE_MAPPING.ContainsKey(block.Type))
-                    {
-                        TYPE_MAPPING.Add(block.Type, block.GetType());
-                    }
-                    else
-                    {
-                        Assert.Fail("Duplicate type mapping for Block " + block.Type.ToString());
-                    }
-                }
-                catch (Exception e)
-                {
-                    Assert.Fail("Failed to create instance for Block type " + type.FullName + " > " + e.Message);
-                }
-            }
+            // TODO: Register block types.
+            RegisterBlockType<BlockString>(BlockType.String);
         }
 
         public BlockType Type { get; private set; }
 
-        public Block(BlockType type)
+        public Block(BlockType blockType)
         {
-            this.Type = type;
+            this.Type = blockType;
         }
 
         public abstract void Serialize(Stream stream);
         public abstract void Deserialize(Stream stream);
+        public abstract Block Clone();
 
         public static Block FromStream(Stream stream)
         {
-            BlockType type = ReadBlockType(stream);
-            Block block = CreateFromType(type);
+            BlockType blockType = ReadBlockType(stream);
+            Block block = CreateFromType(blockType);
 
             block.Deserialize(stream);
 
@@ -68,25 +40,43 @@ namespace DarkTech.Common.BBS
 
         private static BlockType ReadBlockType(Stream stream)
         {
-            byte type = stream.ReadByteEx();
+            byte blockType = stream.ReadByteEx();
 
-            if (!ValidBlockType(type))
+            if (!IsValidBlockType(blockType))
                 throw new BBSException("Invalid block type");
 
-            return (BlockType)type;
+            return (BlockType)blockType;
         }
 
-        private static bool ValidBlockType(byte value)
+        private static bool IsValidBlockType(byte value)
         {
             return Enum.IsDefined(typeof(BlockType), value);
         }
 
-        private static Block CreateFromType(BlockType type)
+        private static Block CreateFromType(BlockType blockType)
         {
-            if (!TYPE_MAPPING.ContainsKey(type))
-                throw new ArgumentException("Could not find type mapping for type", "type");
+            if (!TYPE_MAPPING.ContainsKey(blockType))
+                throw new ArgumentException("Could not find type mapping for type", "blockType");
 
-            return (Block)Activator.CreateInstance(TYPE_MAPPING[type]);
+            return (Block)Activator.CreateInstance(TYPE_MAPPING[blockType]);
+        }
+
+        private static void RegisterBlockType<T>(BlockType blockType) where T : Block, new()
+        {
+            Type type = typeof(T);
+
+            if (type.IsAbstract)
+                throw new ArgumentException("Generic type cannot be abstract");
+            if (type.IsInterface)
+                throw new ArgumentException("Generic type cannot be an interface");
+            if (!type.IsClass)
+                throw new ArgumentException("Generic type must be a class");
+            if (type.ContainsGenericParameters)
+                throw new ArgumentException("Generic type cannot contain generic parameters");
+            if (TYPE_MAPPING.ContainsKey(blockType))
+                throw new ArgumentException("Block type already registered", "blockType");
+
+            TYPE_MAPPING.Add(blockType, type);
         }
     }
 }

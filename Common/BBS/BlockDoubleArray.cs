@@ -8,6 +8,7 @@ namespace DarkTech.Common.BBS
     {
         public BlockDoubleArray() : this(0) { }
         public BlockDoubleArray(int length) : base(BlockType.DoubleArray, length) { }
+        public BlockDoubleArray(double[] defaultValue) : base(BlockType.DoubleArray, defaultValue) { }
 
         protected override void SerializeElement(Stream stream, double element)
         {
@@ -17,6 +18,11 @@ namespace DarkTech.Common.BBS
         protected override double DeserializeElement(Stream stream)
         {
             return stream.ReadDouble();
+        }
+
+        public override Block Clone()
+        {
+            return new BlockDoubleArray(Value);
         }
     }
 }

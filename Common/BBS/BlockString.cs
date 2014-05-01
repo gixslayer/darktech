@@ -7,12 +7,14 @@ namespace DarkTech.Common.BBS
 {
     public sealed class BlockString : BlockData<string>
     {
+        private static readonly Encoding ENCODING = Encoding.UTF8;
+
         public BlockString() : this(string.Empty) {}
         public BlockString(string defaultValue) : base(BlockType.String, defaultValue) {}
 
         public override void Serialize(Stream stream)
         {
-            byte[] buffer = Encoding.UTF8.GetBytes(Value);
+            byte[] buffer = ENCODING.GetBytes(Value);
             int length = buffer.Length > byte.MaxValue ? byte.MaxValue : buffer.Length;
 
             stream.WriteByte((byte)length);
@@ -27,7 +29,12 @@ namespace DarkTech.Common.BBS
             if (!stream.SaveRead(buffer))
                 throw BBSException.UNEXPECTED_EOS;
 
-            Value = Encoding.UTF8.GetString(buffer);
+            Value = ENCODING.GetString(buffer);
+        }
+
+        public override Block Clone()
+        {
+            return new BlockString(Value);
         }
     }
 }

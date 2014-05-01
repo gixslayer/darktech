@@ -8,6 +8,7 @@ namespace DarkTech.Common.BBS
     {
         public BlockUIntArray() : this(0) { }
         public BlockUIntArray(int length) : base(BlockType.UIntArray, length) { }
+        public BlockUIntArray(uint[] defaultValue) : base(BlockType.UInt, defaultValue) { }
 
         protected override void SerializeElement(Stream stream, uint element)
         {
@@ -17,6 +18,11 @@ namespace DarkTech.Common.BBS
         protected override uint DeserializeElement(Stream stream)
         {
             return stream.ReadUInt();
+        }
+
+        public override Block Clone()
+        {
+            return new BlockUIntArray(Value);
         }
     }
 }

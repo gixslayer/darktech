@@ -18,5 +18,10 @@ namespace DarkTech.Common.BBS
         {
             Value = stream.ReadInt();
         }
+
+        public override Block Clone()
+        {
+            return new BlockInt(Value);
+        }
     }
 }

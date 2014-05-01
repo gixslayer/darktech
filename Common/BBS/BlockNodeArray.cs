@@ -6,6 +6,7 @@ namespace DarkTech.Common.BBS
     {
         public BlockNodeArray() : this(0) { }
         public BlockNodeArray(int length) : base(BlockType.NodeArray, length) { }
+        public BlockNodeArray(BlockNode[] defaultValue) : base(BlockType.NodeArray, defaultValue) { }
 
         protected override void SerializeElement(Stream stream, BlockNode element)
         {
@@ -19,6 +20,11 @@ namespace DarkTech.Common.BBS
             block.Deserialize(stream);
 
             return block;
+        }
+
+        public override Block Clone()
+        {
+            return new BlockNodeArray(Value);
         }
     }
 }

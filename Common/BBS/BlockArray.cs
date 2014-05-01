@@ -9,8 +9,9 @@ namespace DarkTech.Common.BBS
     {
         public int Length { get { return Value.Length; } }
 
-        public BlockArray(BlockType type) : this(type, 0) { }
-        public BlockArray(BlockType type, int length) : base(type, new T[length]) { }
+        public BlockArray(BlockType blockType) : this(blockType, 0) { }
+        public BlockArray(BlockType blockType, int length) : this(blockType, new T[length]) { }
+        public BlockArray(BlockType blockType, T[] defaultValue) : base(blockType, defaultValue) { }
 
         public T this[int index]
         {
@@ -53,11 +54,6 @@ namespace DarkTech.Common.BBS
             {
                 Value[i] = DeserializeElement(stream);
             }
-        }
-
-        public static implicit operator T[](BlockArray<T> block)
-        {
-            return block.Value;
         }
     }
 }

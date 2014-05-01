@@ -1,23 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace DarkTech.Common.BBS
 {
     public sealed class BlockNode : BlockData<Dictionary<string, Block>>
     {
+        private static readonly Encoding ENCODING = Encoding.UTF8;
+
         public Dictionary<string, Block>.KeyCollection Keys { get { return Value.Keys; } }
         public Dictionary<string, Block>.ValueCollection Values { get { return Value.Values; } }
         public int Count { get { return Value.Count; } }
 
-        public BlockNode() : base(BlockType.Node, new Dictionary<string,Block>()) { }
+        public BlockNode() : this(new Dictionary<string,Block>()) { }
+        public BlockNode(Dictionary<string, Block> defaultValue) : base(BlockType.Node, defaultValue) { }
 
         public Block this[string name] 
         {
             get
             {
                 if (!Value.ContainsKey(name))
-                    throw new KeyNotFoundException();
+                    throw new KeyNotFoundException(name);
 
                 return Value[name];
             }
@@ -95,20 +99,16 @@ namespace DarkTech.Common.BBS
 
         public override void Serialize(Stream stream)
         {
-            foreach (KeyValuePair<string, Block> block in Value)
+            foreach (KeyValuePair<string, Block> entry in Value)
             {
-                // FIXME: If a block key is longer than 255 bytes it will be cut off after 255 bytes leading to data loss.
+                // BlockStringEx is being used to allow name lengths past 255 bytes.
+                BlockStringEx name = new BlockStringEx(entry.Key, ENCODING);
+                Block block = entry.Value;
 
-                // Temporary hack solution.
-                if (block.Key.Length > 255)
-                    throw new BBSException("Node key length cannot exceed 255 bytes");
-
-                BlockString nameBlock = new BlockString(block.Key);
-
-                stream.WriteByte((byte)nameBlock.Type);
-                nameBlock.Serialize(stream);
-                stream.WriteByte((byte)block.Value.Type);
-                block.Value.Serialize(stream);
+                stream.WriteByte((byte)name.Type);
+                name.Serialize(stream);
+                stream.WriteByte((byte)block.Type);
+                block.Serialize(stream);
             }
 
             stream.WriteByte((byte)BlockType.End);
@@ -125,21 +125,26 @@ namespace DarkTech.Common.BBS
                 if (block is BlockEnd)
                     return;
 
-                if (!(block is BlockString))
-                    throw new BBSException("Unexpected block type");
+                if (!(block is BlockStringEx))
+                    throw new BBSException(string.Format("Unexpected block type {0}", block.GetType()));
 
-                BlockString nameBlock = block as BlockString;
+                BlockStringEx name = block as BlockStringEx;
 
-                if (Value.ContainsKey(nameBlock))
-                    throw new BBSException("Duplicate entry in BlockNode");
+                if (Value.ContainsKey(name))
+                    throw new BBSException(string.Format("Duplicate entry {0} in BlockNode", name.Value));
 
                 block = Block.FromStream(stream);
 
                 if (block is BlockEnd)
-                    throw new BBSException("BlockEnd not allowed in BlockNode");
+                    throw new BBSException("Unexpected BlockEnd");
 
-                Value.Add(nameBlock, block);
+                Value.Add(name, block);
             }
+        }
+
+        public override Block Clone()
+        {
+            return new BlockNode(Value);
         }
     }
 }

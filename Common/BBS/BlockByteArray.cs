@@ -8,6 +8,7 @@ namespace DarkTech.Common.BBS
     {
         public BlockByteArray() : this(0) { }
         public BlockByteArray(int length) : base(BlockType.ByteArray, length) { }
+        public BlockByteArray(byte[] defaultValue) : base(BlockType.ByteArray, defaultValue) { }
 
         protected override void SerializeElement(Stream stream, byte element)
         {
@@ -17,6 +18,11 @@ namespace DarkTech.Common.BBS
         protected override byte DeserializeElement(Stream stream)
         {
             return stream.ReadByteEx();
+        }
+
+        public override Block Clone()
+        {
+            return new BlockByteArray(Value);
         }
     }
 }

@@ -8,6 +8,7 @@ namespace DarkTech.Common.BBS
     {
         public BlockCharArray() : this(0) { }
         public BlockCharArray(int length) : base(BlockType.CharArray, length) { }
+        public BlockCharArray(char[] defaultValue) : base(BlockType.CharArray, defaultValue) { }
 
         protected override void SerializeElement(Stream stream, char element)
         {
@@ -17,6 +18,11 @@ namespace DarkTech.Common.BBS
         protected override char DeserializeElement(Stream stream)
         {
             return stream.ReadChar();
+        }
+
+        public override Block Clone()
+        {
+            return new BlockCharArray(Value);
         }
     }
 }

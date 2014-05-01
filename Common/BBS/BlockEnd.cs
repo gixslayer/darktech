@@ -11,5 +11,10 @@ namespace DarkTech.Common.BBS
         public override void Serialize(Stream stream) { }
 
         public override void Deserialize(Stream stream) { }
+
+        public override Block Clone()
+        {
+            return INSTANCE;
+        }
     }
 }

@@ -8,6 +8,7 @@ namespace DarkTech.Common.BBS
     {
         public BlockFloatArray() : this(0) { }
         public BlockFloatArray(int length) : base(BlockType.FloatArray, length) { }
+        public BlockFloatArray(float[] defaultValue) : base(BlockType.FloatArray, defaultValue) { }
 
         protected override void SerializeElement(Stream stream, float element)
         {
@@ -17,6 +18,11 @@ namespace DarkTech.Common.BBS
         protected override float DeserializeElement(Stream stream)
         {
             return stream.ReadFloat();
+        }
+
+        public override Block Clone()
+        {
+            return new BlockFloatArray(Value);
         }
     }
 }

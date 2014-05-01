@@ -12,7 +12,8 @@ namespace DarkTech.Common.BBS
         public int Count { get { return Value.Count; } }
         public bool IsReadOnly { get { return false; } }
 
-        public BlockList() : base(BlockType.List, new List<Block>()) { }
+        public BlockList() : this(new List<Block>()) { }
+        public BlockList(List<Block> defaultValue) : base(BlockType.List, defaultValue) { }
 
         public Block this[int index]
         {
@@ -35,9 +36,11 @@ namespace DarkTech.Common.BBS
         public T Get<T>(int index) where T : Block
         {
             Block block = this[index];
+            Type genericType = typeof(T);
+            Type elementType = block.GetType();
 
-            if (!typeof(T).IsAssignableFrom(block.GetType()))
-                throw new InvalidCastException("Cannot cast block to given generic type");
+            if (!genericType.IsAssignableFrom(elementType))
+                throw new ArgumentException(string.Format("Cannot cast {0} to generic type {1}", elementType, genericType), "T");
 
             return block as T;
         }
@@ -128,6 +131,11 @@ namespace DarkTech.Common.BBS
 
                 Value.Add(block);
             }
+        }
+
+        public override Block Clone()
+        {
+            return new BlockList(Value);
         }
 
     }
