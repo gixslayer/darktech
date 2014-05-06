@@ -21,6 +21,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -45,8 +46,10 @@
     <Compile Include="Network\UDPSocket.cs" />
     <Compile Include="Network\UDPSocketWindows.cs" />
     <Compile Include="Platform.cs" />
+    <Compile Include="Resources\IResourceLoader.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\ResourceLoader.cs" />
+    <Compile Include="Resources\ResourceLoaderException.cs" />
     <Compile Include="Scripting\CachedCvar.cs" />
     <Compile Include="Scripting\CommandBuffer.cs" />
     <Compile Include="Scripting\CvarBool.cs" />
@@ -56,12 +59,12 @@
     <Compile Include="EntityGroup.cs" />
     <Compile Include="NamedEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Resources\File.cs" />
-    <Compile Include="Resources\FileAccess.cs" />
-    <Compile Include="Resources\FileInfo.cs" />
-    <Compile Include="Resources\FileMode.cs" />
-    <Compile Include="Resources\FileSystem.cs" />
-    <Compile Include="Resources\FileSystemWindows.cs" />
+    <Compile Include="FileSystem\File.cs" />
+    <Compile Include="FileSystem\FileAccess.cs" />
+    <Compile Include="FileSystem\FileInfo.cs" />
+    <Compile Include="FileSystem\FileMode.cs" />
+    <Compile Include="FileSystem\IFileSystem.cs" />
+    <Compile Include="FileSystem\FileSystemWindows.cs" />
     <Compile Include="Resources\ResourceManager.cs" />
     <Compile Include="SceneGraph.cs" />
     <Compile Include="Scripting\Command.cs" />

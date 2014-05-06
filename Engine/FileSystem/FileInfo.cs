@@ -1,7 +1,7 @@
-﻿namespace DarkTech.Engine.Resources
+﻿namespace DarkTech.Engine.FileSystem
 {
     /// <summary>
-    /// Basic file information for a file in the file system.
+    /// Provides basic file information.
     /// </summary>
     public class FileInfo
     {
@@ -14,11 +14,11 @@
         /// </summary>
         public string Extension { get; private set; }
         /// <summary>
-        /// The parent directory of the file. This will always end with a directory separator unless the directory is the root directory (in which case the value will be string.Empty).
-        /// /// </summary>
+        /// The full path of the parent directory relative to the root of the file system.
+        /// </summary>
         public string ParentPath { get; private set; }
         /// <summary>
-        /// The size of the file.
+        /// The size of the file in bytes.
         /// </summary>
         public long Size { get; private set; }
 

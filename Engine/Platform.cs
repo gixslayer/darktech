@@ -1,12 +1,12 @@
 ﻿using System;
 
-using DarkTech.Engine.Resources;
+using DarkTech.Engine.FileSystem;
 
 namespace DarkTech.Engine
 {
     internal static class Platform
     {
-        public static FileSystem CreateFileSystem()
+        public static IFileSystem CreateFileSystem()
         {
             switch (Environment.OSVersion.Platform)
             {

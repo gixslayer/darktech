@@ -2,11 +2,14 @@
 
 namespace DarkTech.Engine.Resources
 {
-    public abstract class ResourceLoader { }
-
-    public abstract class ResourceLoader<T> : ResourceLoader where T : Resource
+    public abstract class ResourceLoader<T> : IResourceLoader where T : Resource
     {
-        // Implementations should call Engine.Error(f) with an error message if they fail to load the resource.
-        public abstract bool Load(Stream stream, out T result);
+        public abstract string Name { get; }
+        public abstract string Author { get; }
+        public abstract string Version { get; }
+
+        public abstract T Load(string resourceName, Stream stream);
+        public abstract bool ShoudLoad(string resourceName, Stream stream);
+        public abstract void Dispose();
     }
 }

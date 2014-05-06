@@ -1,9 +1,9 @@
 ﻿using System;
-using System.IO;
+using Stream = System.IO.Stream;
 using System.Collections.Generic;
 
 using DarkTech.Common.PAK;
-using DarkTech.Common.Utils;
+using DarkTech.Engine.FileSystem;
 
 namespace DarkTech.Engine.Resources
 {
@@ -11,14 +11,14 @@ namespace DarkTech.Engine.Resources
     {
         private readonly Dictionary<string, Stack<PakFile>> pakMapping;
         private readonly Dictionary<string, PakFile> loadedPaks;
-        private readonly Dictionary<Type, ResourceLoader> resourceLoaders;
+        private readonly Dictionary<Type, Dictionary<string, IResourceLoader>> resourceLoaders;
         private readonly Dictionary<string, Resource> resourceCache;
 
         public ResourceManager()
         {
             this.pakMapping = new Dictionary<string, Stack<PakFile>>();
             this.loadedPaks = new Dictionary<string, PakFile>();
-            this.resourceLoaders = new Dictionary<Type, ResourceLoader>();
+            this.resourceLoaders = new Dictionary<Type, Dictionary<string, IResourceLoader>>();
             this.resourceCache = new Dictionary<string, Resource>();
         }
 
@@ -34,12 +34,21 @@ namespace DarkTech.Engine.Resources
                 resource.Dispose();
             }
 
+            foreach (Type type in resourceLoaders.Keys)
+            {
+                foreach (IResourceLoader loader in resourceLoaders[type].Values)
+                {
+                    loader.Dispose();
+                }
+            }
+
             pakMapping.Clear();
             loadedPaks.Clear();
             resourceCache.Clear();
             resourceLoaders.Clear();
         }
 
+        #region Pak
         public bool LoadPak(string path)
         {
             File file;
@@ -47,7 +56,7 @@ namespace DarkTech.Engine.Resources
 
             if (loadedPaks.ContainsKey(path))
             {
-                Engine.PrintDebugf("Pak {0} is already loaded", path);
+                Engine.Warningf("Pak {0} is already loaded", path);
 
                 return true;
             }
@@ -62,9 +71,9 @@ namespace DarkTech.Engine.Resources
             {
                 pakFile = new PakFile(file);
             }
-            catch (StreamException e)
+            catch (PakException e)
             {
-                Engine.Errorf("Could not open pak file {0} > ", path, e.Message);
+                Engine.Errorf("Could not open pak file {0} > {1}", path, e.Message);
 
                 return false;
             }
@@ -90,8 +99,6 @@ namespace DarkTech.Engine.Resources
         {
             if (!loadedPaks.ContainsKey(path))
             {
-                Engine.PrintDebugf("Pak {0} isn't loaded", path);
-
                 return;
             }
 
@@ -143,6 +150,13 @@ namespace DarkTech.Engine.Resources
             return pakMapping.ContainsKey(name);
         }
 
+        private Stream GetResourceStream(string name)
+        {
+            return pakMapping[name].Peek().GetEntryStream(name);
+        }
+        #endregion
+
+        #region Resource
         public T GetResource<T>(string name) where T : Resource
         {
             // Ensure requested resource is cached.
@@ -150,8 +164,6 @@ namespace DarkTech.Engine.Resources
             {
                 if (!CacheResource<T>(name))
                 {
-                    Engine.Errorf("Failed to cache resource {0}", name);
-
                     return null;
                 }
             }
@@ -176,7 +188,6 @@ namespace DarkTech.Engine.Resources
 
             T resource;
 
-            // LoadResource should print information in case it fails to load the resource.
             if (!LoadResource<T>(name, out resource))
             {
                 return false;
@@ -201,31 +212,6 @@ namespace DarkTech.Engine.Resources
             }
         }
 
-        public bool HasResourceLoader<T>() where T : Resource
-        {
-            return resourceLoaders.ContainsKey(typeof(T));
-        }
-
-        public void RegisterResourceLoader<T>(ResourceLoader<T> loader) where T : Resource
-        {
-            if (HasResourceLoader<T>())
-            {
-                Engine.Warningf("Duplicate resource loader registration for type {0}", typeof(T).FullName);
-
-                UnregisterResourceLoader<T>();
-            }
-
-            resourceLoaders.Add(typeof(T), loader);
-        }
-
-        public void UnregisterResourceLoader<T>() where T : Resource
-        {
-            if (HasResourceLoader<T>())
-            {
-                resourceLoaders.Remove(typeof(T));
-            }
-        }
-
         private bool LoadResource<T>(string name, out T result) where T : Resource
         {
             result = null;
@@ -244,17 +230,86 @@ namespace DarkTech.Engine.Resources
                 return false;
             }
 
-            // The resource loader will always be of type ResourceLoader<T>.
-            ResourceLoader<T> loader = resourceLoaders[typeof(T)] as ResourceLoader<T>;
-            Stream stream = GetResourceStream(name);
+            Stream resourceStream = GetResourceStream(name);
 
-            // The resource loader should print information in case it fails to load the resource.
-            return loader.Load(stream, out result);
+            foreach (IResourceLoader loader in resourceLoaders[typeof(T)].Values)
+            {
+                if (!loader.ShoudLoad(name, resourceStream))
+                    continue;
+
+                ResourceLoader<T> loaderImp = (ResourceLoader<T>)loader;
+
+                try 
+                {
+                    result = loaderImp.Load(name, resourceStream);
+
+                    return true;
+                }
+                catch(ResourceLoaderException e) 
+                {
+                    Engine.Errorf("Failed to load resource {0} with loader {1} -> {2}", name, loader.Name, e.Message);
+                }
+            }
+
+            Engine.Errorf("Failed to load resource {0} -> No working loader found", name);
+
+            return false;
         }
+        #endregion
 
-        private Stream GetResourceStream(string name)
+        #region Resource loaders
+        public bool HasResourceLoader<T>() where T : Resource
         {
-            return pakMapping[name].Peek().GetEntryStream(name);
+            return resourceLoaders.ContainsKey(typeof(T));
         }
+
+        public bool HasResourceLoader<T>(string name) where T : Resource
+        {
+            if (!HasResourceLoader<T>())
+            {
+                return false;
+            }
+
+            return resourceLoaders[typeof(T)].ContainsKey(name);
+        }
+
+        public void RegisterResourceLoader<T>(ResourceLoader<T> loader) where T : Resource
+        {
+            if (loader == null)
+                throw new ArgumentNullException("loader");
+
+            if (HasResourceLoader<T>(loader.Name))
+            {
+                Engine.Warningf("Duplicate resource loader registration -> {0}", loader.Name);
+
+                return;
+            }
+
+            Type type = typeof(T);
+
+            if (!resourceLoaders.ContainsKey(type))
+            {
+                resourceLoaders.Add(type, new Dictionary<string, IResourceLoader>());
+            }
+
+            resourceLoaders[type].Add(loader.Name, loader);
+        }
+
+        public void UnregisterResourceLoader<T>(string name) where T : Resource
+        {
+            if (!HasResourceLoader<T>(name))
+            {
+                return;
+            }
+
+            Type type = typeof(T);
+
+            IResourceLoader loader = resourceLoaders[type][name];
+
+            loader.Dispose();
+
+            resourceLoaders[type].Remove(name);
+        }
+        #endregion
     }
 }
