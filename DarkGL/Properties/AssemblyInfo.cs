@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("BBS2Text")]
-[assembly: AssemblyDescription("Converts BBS files to text")]
+[assembly: AssemblyTitle("DarkGL")]
+[assembly: AssemblyDescription("A low level OpenGL binding")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("DarkTech")]
 [assembly: AssemblyProduct("DarkTech")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("26e87c77-3387-4172-ba98-1d98e631a361")]
+[assembly: Guid("2f7fc38b-9acf-44f6-9900-5310614c5afd")]
 
 // Version information for an assembly consists of the following four values:
 //

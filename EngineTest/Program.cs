@@ -2,6 +2,7 @@
 using System.Drawing;
 
 //using DarkTech.Common.Math.Noise;
+using DarkTech.DarkAL;
 
 namespace EngineTest
 {
@@ -14,7 +15,7 @@ namespace EngineTest
             //Render(0x1337243, 32, 1024, 128, "out.jpg");
             //Render(0x1337242, 128, 1024, 128, "out2.jpg");
 
-            int size = 2048;
+           /* int size = 2048;
             int seed = 0x1336;
             int octaves = 8;
             float persistance = 0.5f;
@@ -65,7 +66,36 @@ namespace EngineTest
                 }
             }
 
-            Save(perlin, Color.Black, Color.White, "perlin.jpg");
+            Save(perlin, Color.Black, Color.White, "perlin.jpg");*/
+
+            Console.WriteLine("Capture devices");
+            foreach (string captureDevice in ALUtils.GetCaptureDevices())
+            {
+                Console.WriteLine(captureDevice);
+            }
+
+            Console.WriteLine("Playback devices");
+            string deviceName = string.Empty;
+
+            foreach (string playbackDevice in ALUtils.GetPlaybackDevices())
+            {
+                deviceName = playbackDevice;
+
+                Console.WriteLine(playbackDevice);
+            }
+
+            IntPtr device = alc.OpenDevice(deviceName);
+            IntPtr context = alc.CreateContext(device, IntPtr.Zero);
+            alc.MakeContextCurrent(context);
+
+            int error = alc.GetError(device);
+
+            Console.WriteLine("ERROR: {0} ({1})", error != ALC.NO_ERROR, error);
+
+            Console.WriteLine(alc.GetCurrentContext() == context);
+
+            alc.DestroyContext(context);
+            alc.CloseDevice(device);
 
             Console.WriteLine("DONE");
             Console.Read();
