@@ -13,39 +13,66 @@ namespace DarkTech.Engine.Resources
         private readonly Dictionary<string, PakFile> loadedPaks;
         private readonly Dictionary<Type, Dictionary<string, IResourceLoader>> resourceLoaders;
         private readonly Dictionary<string, Resource> resourceCache;
+        private readonly object disposeSync;
 
-        public ResourceManager()
+        internal ResourceManager()
         {
             this.pakMapping = new Dictionary<string, Stack<PakFile>>();
             this.loadedPaks = new Dictionary<string, PakFile>();
             this.resourceLoaders = new Dictionary<Type, Dictionary<string, IResourceLoader>>();
             this.resourceCache = new Dictionary<string, Resource>();
+            this.disposeSync = new object();
         }
 
-        public void Dispose()
+        internal void Dispose()
         {
-            foreach (PakFile pakFile in loadedPaks.Values)
+            lock (disposeSync)
             {
-                pakFile.Close();
-            }
-
-            foreach (Resource resource in resourceCache.Values)
-            {
-                resource.Dispose();
-            }
-
-            foreach (Type type in resourceLoaders.Keys)
-            {
-                foreach (IResourceLoader loader in resourceLoaders[type].Values)
+                foreach (PakFile pakFile in loadedPaks.Values)
                 {
-                    loader.Dispose();
+                    pakFile.Close();
+                }
+
+                foreach (Resource resource in resourceCache.Values)
+                {
+                    resource.Dispose();
+                }
+
+                foreach (Type type in resourceLoaders.Keys)
+                {
+                    foreach (IResourceLoader loader in resourceLoaders[type].Values)
+                    {
+                        loader.Dispose();
+                    }
+                }
+
+                pakMapping.Clear();
+                loadedPaks.Clear();
+                resourceCache.Clear();
+                resourceLoaders.Clear();
+            }
+        }
+
+        internal void DisposeCategory(ResourceCategory category)
+        {
+            lock (disposeSync)
+            {
+                List<string> disposedResourceNames = new List<string>();
+
+                foreach (KeyValuePair<string, Resource> resource in resourceCache)
+                {
+                    if (resource.Value.Category != category)
+                        continue;
+
+                    resource.Value.Dispose();
+                    disposedResourceNames.Add(resource.Key);
+                }
+
+                foreach (string resourceName in disposedResourceNames)
+                {
+                    resourceCache.Remove(resourceName);
                 }
             }
-
-            pakMapping.Clear();
-            loadedPaks.Clear();
-            resourceCache.Clear();
-            resourceLoaders.Clear();
         }
 
         #region Pak
@@ -181,9 +208,9 @@ namespace DarkTech.Engine.Resources
         {
             if (IsResourceCached(name))
             {
-                Engine.Warningf("Duplicate resource cache entry for {0}", name);
+                Engine.Warningf("Duplicate resource cache for {0}", name);
 
-                DisposeResource(name);
+                return true;
             }
 
             T resource;

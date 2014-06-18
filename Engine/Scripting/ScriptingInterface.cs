@@ -208,6 +208,17 @@ namespace DarkTech.Engine.Scripting
             return GetCvar(name).ToString();
         }
 
+        public T GetCvarValue<T>(string name)
+        {
+            Cvar cvar = GetCvar(name);
+            Type expected = typeof(CvarBase<T>);
+
+            if (!expected.IsAssignableFrom(cvar.GetType()))
+                throw new ArgumentException("Invalid cvar type");
+
+            return ((CvarBase<T>)cvar).Value;
+        }
+
         public void RegisterCvarCallback<T>(string name, CvarCallback<T> callback)
         {
             if (!IsCvarRegistered(name))

@@ -21,6 +21,19 @@ namespace DarkTech.Common.IO
             stream.Write(buffer, 0, buffer.Length);
         }
 
+        public static byte[] ReadBytes(this Stream stream, int count)
+        {
+            if (count < 0)
+                throw new System.ArgumentOutOfRangeException("count");
+
+            byte[] buffer = new byte[count];
+
+            if (!SaveRead(stream, buffer))
+                throw StreamException.UNEXPECTED_EOS;
+
+            return buffer;
+        }
+
         public static byte ReadByteEx(this Stream stream)
         {
             int iByte = stream.ReadByte();

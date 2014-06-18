@@ -9,7 +9,7 @@ namespace DarkTech.DarkGL
 	/// <summary>
 	/// Preliminary Win32 context class. Subject to change.
 	/// </summary>
-	public class ContextWin : Context, IDisposable
+	public class ContextWin : Context
 	{
 		//private IntPtr hWnd;
 		private PixelFormatDescriptor pfd;
@@ -42,7 +42,7 @@ namespace DarkTech.DarkGL
 		/// <summary>
 		/// Deletes the rendering context and releases the device context.
 		/// </summary>
-		public void Dispose()
+		public override void Dispose()
 		{
 			if (!disposed)
 			{

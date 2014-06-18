@@ -32,12 +32,12 @@ namespace DarkTech.Engine
                     }
                     catch (Exception e)
                     {
-                        Debug.Fail("Failed to create instance for type", "Failed to create instance for Event type " + type.FullName + " > " + e.Message);
+                        //Debug.Fail("Failed to create instance for type", "Failed to create instance for Event type " + type.FullName + " > " + e.Message);
                     }
                 }
                 else
                 {
-                    Debug.Fail("Duplicate type mapping", "Duplicate type mapping for Event " + type.FullName);
+                    //Debug.Fail("Duplicate type mapping", "Duplicate type mapping for Event " + type.FullName);
                 }
             }
         }

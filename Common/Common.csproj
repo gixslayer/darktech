@@ -74,7 +74,6 @@
     <Compile Include="BBS\BlockULongArray.cs" />
     <Compile Include="BBS\BlockUShort.cs" />
     <Compile Include="BBS\BlockUShortArray.cs" />
-    <Compile Include="Debug\Profiler.cs" />
     <Compile Include="IO\SubStream.cs" />
     <Compile Include="Math\MathHelper.cs" />
     <Compile Include="Math\Vector2f.cs" />

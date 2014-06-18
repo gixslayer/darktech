@@ -57,6 +57,10 @@
       <Project>{805435bd-3832-4476-a304-4098450d4ed9}</Project>
       <Name>DarkAL</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Engine\Engine.csproj">
+      <Project>{58456d6e-2b42-4e36-9367-2b08b21b3b24}</Project>
+      <Name>Engine</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

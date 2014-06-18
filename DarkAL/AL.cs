@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace DarkTech.DarkAL
 {
-    public static class al
+    public partial class al
     {
         private const string LIBRARY = "OpenAL32.dll";
         private const CallingConvention CALLING_CONVENTION = CallingConvention.Cdecl;

@@ -35,38 +35,88 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Component.cs" />
-    <Compile Include="ComponentEventHandler.cs" />
-    <Compile Include="ComponentSet.cs" />
-    <Compile Include="Event.cs" />
-    <Compile Include="EventDispatcher.cs" />
-    <Compile Include="EventType.cs" />
+    <Compile Include="Debug\Assert.cs" />
+    <Compile Include="Debug\Profiler.cs" />
+    <Compile Include="Graphics\DummyBackend.cs" />
+    <Compile Include="Graphics\DummyWindow.cs" />
+    <Compile Include="Graphics\IRenderBackend.cs" />
+    <Compile Include="Graphics\RenderCommand.cs" />
+    <Compile Include="Graphics\RenderQueue.cs" />
+    <Compile Include="Graphics\Vsync.cs" />
+    <Compile Include="Graphics\Windows\ClassStyles.cs" />
+    <Compile Include="Graphics\Windows\IdcStandardCursors.cs" />
+    <Compile Include="Graphics\Windows\Msg.cs" />
+    <Compile Include="Graphics\Windows\Point.cs" />
+    <Compile Include="Graphics\Windows\Rect.cs" />
+    <Compile Include="Graphics\Windows\ShowWindowCommands.cs" />
+    <Compile Include="Graphics\Windows\StockObjects.cs" />
+    <Compile Include="Graphics\Windows\SystemIcons.cs" />
+    <Compile Include="Graphics\Windows\Win32.cs" />
+    <Compile Include="Graphics\Windows\WindowStyles.cs" />
+    <Compile Include="Graphics\Windows\WindowStylesEx.cs" />
+    <Compile Include="Graphics\Windows\WindowWin.cs" />
+    <Compile Include="Graphics\Windows\Wm.cs" />
+    <Compile Include="Graphics\Windows\WndClass.cs" />
+    <Compile Include="NetModel.cs" />
+    <Compile Include="Resources\ResourceCategory.cs" />
+    <Compile Include="Sound\Filters\GainFilter.cs" />
+    <Compile Include="Sound\Filters\InvertFilter.cs" />
+    <Compile Include="Sound\Filters\PanFilter.cs" />
+    <Compile Include="Sound\Filters\SwapFilter.cs" />
+    <Compile Include="Sound\ISoundSystem.cs" />
+    <Compile Include="Sound\Mixer.cs" />
+    <Compile Include="Sound\MixerChannel.cs" />
+    <Compile Include="Sound\OpenALVoice.cs" />
+    <Compile Include="Sound\Sample.cs" />
+    <Compile Include="Sound\ISampleConsumer.cs" />
+    <Compile Include="Sound\ISampleProvider.cs" />
+    <Compile Include="Sound\SampleBuffer.cs" />
+    <Compile Include="Sound\SamplePlayer.cs" />
+    <Compile Include="Sound\SampleTransformer.cs" />
+    <Compile Include="SystemFactory.cs" />
+    <Compile Include="Temp\Component.cs" />
+    <Compile Include="Temp\ComponentEventHandler.cs" />
+    <Compile Include="Temp\ComponentSet.cs" />
+    <Compile Include="DummyClient.cs" />
+    <Compile Include="DummyServer.cs" />
+    <Compile Include="Engine.GameLoop.cs" />
+    <Compile Include="EngineConfiguration.cs" />
+    <Compile Include="Temp\Event.cs" />
+    <Compile Include="Temp\EventDispatcher.cs" />
+    <Compile Include="Temp\EventType.cs" />
+    <Compile Include="Graphics\BackendOpenGL.cs" />
+    <Compile Include="IClient.cs" />
+    <Compile Include="IServer.cs" />
     <Compile Include="Network\UDPSocket.cs" />
     <Compile Include="Network\UDPSocketWindows.cs" />
     <Compile Include="Platform.cs" />
+    <Compile Include="Resources\SoundBuffer.cs" />
     <Compile Include="Resources\IResourceLoader.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\ResourceLoader.cs" />
     <Compile Include="Resources\ResourceLoaderException.cs" />
+    <Compile Include="Resources\SoundAlias.cs" />
     <Compile Include="Scripting\CachedCvar.cs" />
     <Compile Include="Scripting\CommandBuffer.cs" />
     <Compile Include="Scripting\CvarBool.cs" />
     <Compile Include="Engine.Main.cs" />
     <Compile Include="Engine.Printing.cs" />
-    <Compile Include="Entity.cs" />
-    <Compile Include="EntityGroup.cs" />
-    <Compile Include="NamedEntity.cs" />
+    <Compile Include="Temp\Entity.cs" />
+    <Compile Include="Temp\EntityGroup.cs" />
+    <Compile Include="Temp\NamedEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FileSystem\File.cs" />
     <Compile Include="FileSystem\FileAccess.cs" />
     <Compile Include="FileSystem\FileInfo.cs" />
     <Compile Include="FileSystem\FileMode.cs" />
     <Compile Include="FileSystem\IFileSystem.cs" />
-    <Compile Include="FileSystem\FileSystemWindows.cs" />
+    <Compile Include="FileSystem\FileSystemWin.cs" />
     <Compile Include="Resources\ResourceManager.cs" />
-    <Compile Include="SceneGraph.cs" />
+    <Compile Include="Temp\SceneGraph.cs" />
     <Compile Include="Scripting\Command.cs" />
     <Compile Include="Scripting\Cvar.cs" />
     <Compile Include="Scripting\CvarBase.cs" />
@@ -84,12 +134,23 @@
     <Compile Include="Scripting\ScriptingInterface.cs" />
     <Compile Include="Scripting\Arg.cs" />
     <Compile Include="Scripting\ArgType.cs" />
+    <Compile Include="Graphics\IWindow.cs" />
+    <Compile Include="Timing\ITimer.cs" />
+    <Compile Include="Timing\TimerWin.cs" />
+    <Compile Include="Utils\AssemblyUtils.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{7bf6a7bc-3b48-4c3f-85af-88d48791295e}</Project>
       <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DarkAL\DarkAL.csproj">
+      <Project>{805435bd-3832-4476-a304-4098450d4ed9}</Project>
+      <Name>DarkAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DarkGL\DarkGL.csproj">
+      <Project>{dd7fa289-5fc7-492d-83e9-50b45f9c4064}</Project>
+      <Name>DarkGL</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

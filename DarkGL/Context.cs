@@ -5,12 +5,14 @@ namespace DarkTech.DarkGL
     /// <summary>
     /// Abstract context. Should serve for platform independent context creation. Currently only Win32 platform is supported.
     /// </summary>
-    public abstract class Context
+    public abstract class Context : IDisposable
     {
         /// <summary>
         /// Context setting.
         /// </summary>
         public ContextSetting Setting { get; set; }
+
+        public abstract void Dispose();
 
         /// <summary>
         /// Makes the context current.

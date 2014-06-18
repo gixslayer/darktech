@@ -147,6 +147,11 @@ namespace DarkTech.Common.Math
             return value < 0f ? -value : value;
         }
 
+        public static double Abs(double value)
+        {
+            return value < 0d ? -value : value;
+        }
+
         public static float Pow(float val, float pow)
         {
             return (float)SMath.Pow(val, pow);

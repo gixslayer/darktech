@@ -1,22 +1,56 @@
 ﻿using System;
+using System.Diagnostics;
 
 using DarkTech.Engine.FileSystem;
+using DarkTech.Engine.Graphics;
+using DarkTech.Engine.Graphics.Windows;
+using DarkTech.Engine.Timing;
 
 namespace DarkTech.Engine
 {
     internal static class Platform
     {
+        public static bool IsSupported()
+        {
+            switch (Environment.OSVersion.Platform)
+            {
+                case PlatformID.Win32NT:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         public static IFileSystem CreateFileSystem()
         {
             switch (Environment.OSVersion.Platform)
             {
                 case PlatformID.Win32NT:
-                case PlatformID.Win32S:
-                case PlatformID.Win32Windows:
-                case PlatformID.WinCE:
-                    return new FileSystemWindows();
+                    return new FileSystemWin();
                 default:
-                    throw new PlatformNotSupportedException("Could not create FileSystem implementation for current platform");
+                    throw new PlatformNotSupportedException("Could not create IFileSystem implementation for current platform");
+            }
+        }
+
+        public static IWindow CreateWindow()
+        {
+            switch (Environment.OSVersion.Platform)
+            {
+                case PlatformID.Win32NT:
+                    return new WindowWin(Process.GetCurrentProcess().Handle);
+                default:
+                    throw new PlatformNotSupportedException("Could not create IWindow implementation for current platform");
+            }
+        }
+
+        public static ITimer CreateTimer()
+        {
+            switch (Environment.OSVersion.Platform)
+            {
+                case PlatformID.Win32NT:
+                    return new TimerWin();
+                default:
+                    throw new PlatformNotSupportedException("Could not create ITimer implementation for current platform");
             }
         }
     }

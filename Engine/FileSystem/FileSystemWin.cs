@@ -2,29 +2,35 @@
 using IO = System.IO;
 using StringBuilder = System.Text.StringBuilder;
 
+using DarkTech.Engine.Scripting;
+
 namespace DarkTech.Engine.FileSystem
 {
-    public sealed class FileSystemWindows : IFileSystem
+    internal sealed class FileSystemWin : IFileSystem
     {
         public const char DIRECTORY_SEPARATOR = '\\';
         public const string DIRECTORY_SEPARATOR_STR = "\\";
 
         private static readonly string[] ARRAY_EMPTY = new string[0];
 
-        // TODO: Assign root to a string Cvar fs_root
         // NOTE: Enforce fs_root does not end with a directory separator.
-        private string root = string.Empty;
+        private string rootDirectory;
+
+        public FileSystemWin()
+        {
+            rootDirectory = Engine.ScriptingInterface.GetCvarValue<string>("fs_root");
+        }
 
         public bool DirectoryExists(string path)
         {
-            return IO.Directory.Exists(CombinePath(root, path));
+            return IO.Directory.Exists(CombinePath(rootDirectory, path));
         }
 
         public void CreateDirectory(string path)
         {
             try
             {
-                IO.Directory.CreateDirectory(CombinePath(root, path));
+                IO.Directory.CreateDirectory(CombinePath(rootDirectory, path));
             }
             catch (Exception e)
             {
@@ -36,7 +42,7 @@ namespace DarkTech.Engine.FileSystem
         {
             try
             {
-                IO.Directory.Delete(CombinePath(root, path), true);
+                IO.Directory.Delete(CombinePath(rootDirectory, path), true);
             }
             catch (Exception e)
             {
@@ -51,7 +57,7 @@ namespace DarkTech.Engine.FileSystem
 
             try
             {
-                directoryInfo = new IO.DirectoryInfo(CombinePath(root, path));
+                directoryInfo = new IO.DirectoryInfo(CombinePath(rootDirectory, path));
             }
             catch (Exception e)
             {
@@ -99,7 +105,7 @@ namespace DarkTech.Engine.FileSystem
 
             try
             {
-                directoryInfo = new IO.DirectoryInfo(CombinePath(root, path));
+                directoryInfo = new IO.DirectoryInfo(CombinePath(rootDirectory, path));
             }
             catch (Exception e)
             {
@@ -142,14 +148,14 @@ namespace DarkTech.Engine.FileSystem
 
         public bool FileExists(string path)
         {
-            return IO.File.Exists(CombinePath(root, path));
+            return IO.File.Exists(CombinePath(rootDirectory, path));
         }
 
         public void DeleteFile(string path)
         {
             try
             {
-                IO.File.Delete(CombinePath(root, path));
+                IO.File.Delete(CombinePath(rootDirectory, path));
             }
             catch (Exception e)
             {
@@ -164,7 +170,7 @@ namespace DarkTech.Engine.FileSystem
 
             try
             {
-                fileInfo = new IO.FileInfo(CombinePath(root, path));
+                fileInfo = new IO.FileInfo(CombinePath(rootDirectory, path));
             }
             catch (Exception e)
             {
@@ -188,7 +194,7 @@ namespace DarkTech.Engine.FileSystem
             long size = fileInfo.Length;
 
             // Make sure the parentPath is relative to the file system root.
-            parentPath = parentPath == root ? string.Empty : parentPath.Substring(root.Length + 1);
+            parentPath = parentPath == rootDirectory ? string.Empty : parentPath.Substring(rootDirectory.Length + 1);
 
             return new FileInfo(name, extension, parentPath, size);
         }
@@ -218,7 +224,7 @@ namespace DarkTech.Engine.FileSystem
 
             try
             {
-                stream = new IO.FileStream(CombinePath(root, path), fileMode, fileAccess);
+                stream = new IO.FileStream(CombinePath(rootDirectory, path), fileMode, fileAccess);
             }
             catch (Exception e)
             {
@@ -251,8 +257,8 @@ namespace DarkTech.Engine.FileSystem
             string parentPath = string.Empty;
             long size = 0;
 
-            string fullPath = CombinePath(root, path);
-            string relative = fullPath.Substring(root.Length + 1);
+            string fullPath = CombinePath(rootDirectory, path);
+            string relative = fullPath.Substring(rootDirectory.Length + 1);
 
             if (relative.Contains(DIRECTORY_SEPARATOR_STR))
             {

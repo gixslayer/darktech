@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 
 //using DarkTech.Common.Math.Noise;
 using DarkTech.DarkAL;
+using DarkTech.Engine;
+using DarkTech.Engine.Debug;
 
 namespace EngineTest
 {
@@ -10,7 +14,29 @@ namespace EngineTest
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("start");
+            //TestProfiler();
+
+            Console.WriteLine("pre start");
+
+            EngineConfiguration config = new EngineConfiguration();
+            config.RootDirectory = @"D:\Programming\C#\DarkTech\EngineTest\bin\Debug";
+            config.InitializeClient = false;
+            config.InitializeGraphicsSystem = true;
+            config.InitializeServer = true;
+            config.InitializeSoundSystem = false;
+            config.ClientDLL = "";
+            config.ServerDLL = "TestServer.dll";
+            config.UPS = 60;
+            config.WindowTitle = "Test window";
+            config.WindowWidth = 1280;
+            config.WindowHeight = 720;
+            config.WindowX = 0;
+            config.WindowY = 0;
+            config.PrintStreams.Add(Console.Out);
+
+            Console.WriteLine(Engine.Start(config));
+
+            Console.WriteLine("post start");
 
             //Render(0x1337243, 32, 1024, 128, "out.jpg");
             //Render(0x1337242, 128, 1024, 128, "out2.jpg");
@@ -68,7 +94,7 @@ namespace EngineTest
 
             Save(perlin, Color.Black, Color.White, "perlin.jpg");*/
 
-            Console.WriteLine("Capture devices");
+            /*Console.WriteLine("Capture devices");
             foreach (string captureDevice in ALUtils.GetCaptureDevices())
             {
                 Console.WriteLine(captureDevice);
@@ -95,10 +121,57 @@ namespace EngineTest
             Console.WriteLine(alc.GetCurrentContext() == context);
 
             alc.DestroyContext(context);
-            alc.CloseDevice(device);
+            alc.CloseDevice(device);*/
 
-            Console.WriteLine("DONE");
-            Console.Read();
+            //Console.WriteLine("DONE");
+            //Console.Read();
+        }
+
+        static void TestProfiler()
+        {
+            Profiler profiler = new Profiler();
+            FileStream stream = new FileStream("frame.plog", FileMode.Create, FileAccess.Write);
+
+            for (int i = 0; i < 10; i++)
+            {
+                profiler.BeginFrame();
+
+                profiler.Begin("test1");
+                {
+                    profiler.Begin("test2");
+                    {
+                        profiler.Begin("test3");
+                        {
+                            System.Threading.Thread.Sleep(10);
+                        }
+                        profiler.End("test3");
+
+                        profiler.Begin("test4");
+                        {
+                            System.Threading.Thread.Sleep(20);
+                        }
+                        profiler.End("test4");
+
+                        profiler.Begin("test5");
+                        {
+                            System.Threading.Thread.Sleep(30);
+                        }
+                        profiler.End("test5");
+                    }
+                    profiler.End("test2");
+                }
+                profiler.End("test1");
+
+                profiler.EndFrame();
+
+                FrameResult frameResult = profiler.LastFrame;
+                frameResult.Serialize(stream);
+            }
+
+            stream.Dispose();
+
+            //FileStream dStream = new FileStream("frame.plog", FileMode.Open, FileAccess.Read);
+            //FrameResult deserialized = FrameResult.Deserialize(dStream);
         }
 
         /*static void Render(int seed, int sampleSize, int width, int height, string dest)
