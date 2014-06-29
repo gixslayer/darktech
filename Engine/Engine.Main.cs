@@ -3,6 +3,9 @@ using System.Threading;
 
 using DarkTech.Engine.FileSystem;
 using DarkTech.Engine.Graphics;
+using DarkTech.Engine.Graphics.Render;
+using DarkTech.Engine.Graphics.Render.BackEnd;
+using DarkTech.Engine.Graphics.Render.FrontEnd;
 using DarkTech.Engine.Resources;
 using DarkTech.Engine.Scripting;
 using DarkTech.Engine.Sound;
@@ -16,16 +19,18 @@ namespace DarkTech.Engine
         private static bool hasShutdown;
         private static IClient client;
         private static IServer server;
+        private static Thread gameThread;
         private static CvarBool sv_cheats;
-
-        internal static IRenderBackend RenderBackend { get; private set; }
-        internal static RenderQueue RenderQueue { get; private set; }
+        private static ManualResetEventSlim shutdownEvent;
+        private static RenderQueue renderQueue;
+        private static IRenderBackEnd renderBackEnd;
 
         public static IFileSystem FileSystem { get; private set; }
         public static ResourceManager ResourceManager { get; private set; }
         public static ScriptingInterface ScriptingInterface { get; private set; }
         public static ISoundSystem SoundSystem { get; private set; }
         public static IWindow Window { get; private set; }
+        public static IRenderFrontEnd Renderer { get; private set; }
         public static bool ShutdownRequested { get { return shutdownRequested; } }
         public static bool CheatsEnabled { get { return sv_cheats; } }
 
@@ -36,9 +41,13 @@ namespace DarkTech.Engine
         {
             Engine.shutdownRequested = false;
             Engine.hasShutdown = false;
+            Engine.shutdownEvent = new ManualResetEventSlim(false);
+            Engine.gameThread = new Thread(GameLoop);
+            Engine.gameThread.Name = "Game";
+            Thread.CurrentThread.Name = "Startup/Render";
 
-            // Attach the print streams to the printing system.
-            AttachPrintStream(configuration.PrintStreams.ToArray());
+            // Attach the stdout to the printing system.
+            AttachPrintStream(Console.Out);
 
             // Ensure the current platform is supported.
             if (!Platform.IsSupported())
@@ -61,6 +70,7 @@ namespace DarkTech.Engine
             if (shutdownRequested)
                 return;
 
+            shutdownEvent.Set();
             shutdownRequested = true;
         }
 
@@ -79,20 +89,20 @@ namespace DarkTech.Engine
             ResourceManager = SystemFactory.CreateResourceManager();
             SoundSystem = SystemFactory.CreateSoundSystem();
             Window = SystemFactory.CreateWindow();
-            RenderQueue = new RenderQueue();
-            RenderBackend = SystemFactory.CreateRenderBackend();
+            renderQueue = SystemFactory.CreateRenderQueue();
+            renderBackEnd = SystemFactory.CreateRenderBackEnd(renderQueue);
+            Renderer = SystemFactory.CreateRenderFrontEnd(renderQueue);
 
-            // Create sound/graphics context.
+            // Create window and graphics context.
             if (!Window.CreateWindow()) return false;
-            if (!RenderBackend.CreateContext()) return false;
-            if (!SoundSystem.CreateContext()) return false;
+            if (!renderBackEnd.CreateContext()) return false;
 
             // Load server and client.
             if (!LoadServer()) return false;
             if (!LoadClient()) return false;
 
-            RenderBackend.Initialize();
-            SoundSystem.Initialize();
+            // Initialize sound system.
+            if (!SoundSystem.Initialize()) return false;
 
             return true;
         }
@@ -100,75 +110,76 @@ namespace DarkTech.Engine
         private static void RegisterCvars(EngineConfiguration configuration)
         {
             RegisterSystemCvars(configuration);
-
-            if (configuration.InitializeGraphicsSystem) 
-                RegisterGraphicsCvars();
-
-            if (configuration.InitializeServer) 
-                RegisterServerCvars();
-
-            if (configuration.InitializeClient) 
-                RegisterClientCvars();
+            RegisterServerCvars();
+            RegisterClientCvars();
         }
 
         private static void RegisterSystemCvars(EngineConfiguration configuration)
         {
-            // sys - System.
-            ScriptingInterface.RegisterCvarInt("sys_maxFps", "Maximum frames per second to render", CvarFlag.None, 120, 1, 1000);
-            ScriptingInterface.RegisterCvarInt("sys_ups", "Amount of updates per second", CvarFlag.ReadOnly, 60, 1, 1000);
-            ScriptingInterface.RegisterCvarBool("sys_initClient", "Initialize the client", CvarFlag.ReadOnly, configuration.InitializeClient);
-            ScriptingInterface.RegisterCvarBool("sys_initServer", "Initialize the server", CvarFlag.ReadOnly, configuration.InitializeServer);
-            ScriptingInterface.RegisterCvarBool("sys_initSound", "Initialize the sound system", CvarFlag.ReadOnly, configuration.InitializeSoundSystem);
-            ScriptingInterface.RegisterCvarBool("sys_initGraphics", "Initialize the graphic system", CvarFlag.ReadOnly, configuration.InitializeGraphicsSystem);
-            ScriptingInterface.RegisterCvarBool("sys_smp", "Use multicore processing", CvarFlag.WriteProtected, false);
-            ScriptingInterface.RegisterCvarEnum<NetModel>("sys_netModel", "Network model of the engine", CvarFlag.WriteProtected, NetModel.Mixed);
+            // sys - System.            
+            ScriptingInterface.RegisterCvarEnum<NetModel>("sys_netModel", "Network model of the engine", CvarFlag.WriteProtected, configuration.NetModel);
+
+            ScriptingInterface.RegisterCvarCallback<NetModel>("sys_netModel", sys_netModelCallback);
 
             // fs - File system.
             ScriptingInterface.RegisterCvarString("fs_root", "Root of the file system", CvarFlag.ReadOnly, configuration.RootDirectory);
             ScriptingInterface.RegisterCvarString("fs_client", "Client DLL location", CvarFlag.ReadOnly, configuration.ClientDLL);
             ScriptingInterface.RegisterCvarString("fs_server", "Server DLL location", CvarFlag.ReadOnly, configuration.ServerDLL);
 
-            ScriptingInterface.RegisterCvarCallback<int>("sys_maxFps", sys_maxFpsCallback);
-            ScriptingInterface.RegisterCvarCallback<NetModel>("sys_netModel", sys_netModelCallback);
-        }
+            // snd - Sound system.
+            ScriptingInterface.RegisterCvarString("snd_device", "Name of the sound device to use", CvarFlag.None, "default");
+            ScriptingInterface.RegisterCvarInt("snd_freq", "Sound frequency", CvarFlag.ReadOnly, 44100);
+            ScriptingInterface.RegisterCvarInt("snd_bufferSize", "Sound buffer size in samples", CvarFlag.None, 147, 1, 44100);
+            ScriptingInterface.RegisterCvarInt("snd_bufferCount", "Amount of preprocessed buffers", CvarFlag.None, 2, 1, 100);
+            ScriptingInterface.RegisterCvarBool("snd_shutdownRequested", "Determines if a sound system shutdown is requested", CvarFlag.WriteProtected, false);
+            ScriptingInterface.RegisterCvarBool("snd_noSound", "Disable sound", CvarFlag.None, false);
 
-        private static void RegisterGraphicsCvars()
-        {
             // w - Window, client should set the appropriate values during initialization.
-            ScriptingInterface.RegisterCvarString("w_title", "Window title", CvarFlag.WriteProtected, "DarkTech Engine");
+            ScriptingInterface.RegisterCvarString("w_title", "Window title", CvarFlag.None, "DarkTech Engine");
             ScriptingInterface.RegisterCvarInt("w_x", "Window x location", CvarFlag.None, 0, 0, 65536);
             ScriptingInterface.RegisterCvarInt("w_y", "Window y location", CvarFlag.None, 0, 0, 65536);
             ScriptingInterface.RegisterCvarInt("w_width", "Window width", CvarFlag.None, 1280, 1, 65536);
             ScriptingInterface.RegisterCvarInt("w_height", "Window height", CvarFlag.None, 720, 1, 65536);
 
-            // r - Renderer
+            // r - Renderer.
             ScriptingInterface.RegisterCvarEnum<Vsync>("r_vsync", "Vsync mode", CvarFlag.None, Vsync.On);
+            ScriptingInterface.RegisterCvarBool("r_restartRequested", "Used by r_restart to request a render backend restart", CvarFlag.WriteProtected, false);
         }
 
         private static void RegisterClientCvars()
         {
+            ScriptingInterface.RegisterCvarInt("cl_fps", "Amount of client frames per second", CvarFlag.None, 1000, 1, 1000);
 
+            ScriptingInterface.RegisterCvarCallback<int>("cl_fps", cl_fpsCallback);
         }
 
         private static void RegisterServerCvars()
         {
             sv_cheats = ScriptingInterface.RegisterCvarBool("sv_cheats", "Enable cheats", CvarFlag.WriteProtected, false);
-            ScriptingInterface.RegisterCvarInt("sv_ups", "Amount of server updates per second", CvarFlag.WriteProtected, 20, 1, 1000);
+            ScriptingInterface.RegisterCvarInt("sv_fps", "Amount of server frames per second", CvarFlag.WriteProtected, 20, 1, 1000);
+
+            ScriptingInterface.RegisterCvarCallback<int>("sv_fps", sv_fpsCallback);
         }
 
         private static void RegisterCommands()
         {
             ScriptingInterface.RegisterCommand("quit", "Closes the engine and returns to the desktop", false, quit);
+
+            // r - Renderer.
+            ScriptingInterface.RegisterCommand("r_restart", "Restart the render backend", false, r_restart);
+
+            // snd - Sound system.
+            ScriptingInterface.RegisterCommand("snd_restart", "Restart the sound system", false, snd_restart);
         }
 
         private static bool LoadServer()
         {
             server = new DummyServer();
 
-            if (!ScriptingInterface.GetCvarValue<bool>("sys_initServer"))
+            if (ScriptingInterface.GetCvarValue<NetModel>("sys_netModel") == NetModel.ClientOnly)
                 return true;
 
-            string serverPath = Engine.ScriptingInterface.GetCvarValue<string>("fs_server");
+            string serverPath = ScriptingInterface.GetCvarValue<string>("fs_server");
 
             if (!AssemblyUtils.LoadType<IServer>(serverPath, out server))
                 return false;
@@ -191,7 +202,7 @@ namespace DarkTech.Engine
         {
             client = new DummyClient();
 
-            if (!ScriptingInterface.GetCvarValue<bool>("sys_initClient"))
+            if (ScriptingInterface.GetCvarValue<NetModel>("sys_netModel") == NetModel.ServerOnly)
                 return true;
 
             string clientPath = ScriptingInterface.GetCvarValue<string>("fs_client");
@@ -217,39 +228,21 @@ namespace DarkTech.Engine
         #region Run
         private static void Run()
         {
-            EnterGameLoop();
-            ShowWindow();
-        }
+            // Start the sound system thread.
+            SoundSystem.Start();
 
-        private static void EnterGameLoop()
-        {
-            // If no window is created don't spawn a new thread to run the game loop, but run the game loop on the current thread.
-            if (!ScriptingInterface.GetCvarValue<bool>("sys_initGraphics"))
-            {
-                // Will block until RequestShutdown is called.
-                GameLoop();
-            }
-            else
-            {
-                // A window is created, spawn a new thread to run the game loop on.
-                Thread mainLoopThread = new Thread(GameLoop);
-                mainLoopThread.Name = "Main loop";
+            // Start the game thread.
+            gameThread.Start();
 
-                mainLoopThread.Start();
-            }
-        }
+            // Show the window and enter the render back-end loop on the current thread.
+            Window.ShowWindow();
+            renderBackEnd.Start();
 
-        private static void ShowWindow()
-        {
-            // If no window is created don't do anything.
-            if (!ScriptingInterface.GetCvarValue<bool>("sys_initGraphics"))
-                return;
+            // Block the current thread until a shutdown is requested (in case of a server only net model).
+            shutdownEvent.Wait();
 
-            // Will start the window message loop on the current thread, blocks until the window closes.
-            Window.EnterMessageLoop();
-
-            // Once the window closes request a shutdown to make sure all other threads also exit.
-            RequestShutdown();
+            // Shut down systems and perform cleanup.
+            Shutdown();
         }
         #endregion
 
@@ -273,7 +266,7 @@ namespace DarkTech.Engine
             ResourceManager.Dispose();
 
             // Dispose render queue so that the render back-end will exit properly in SMP mode.
-            RenderQueue.Dispose();
+            renderQueue.Dispose();
 
             // Dispose the window which should also force it to close.
             Window.Dispose();
@@ -282,9 +275,23 @@ namespace DarkTech.Engine
         }
         #endregion
 
+        #region Command handlers
         private static void quit(ArgList args)
         {
             RequestShutdown();
         }
+
+        private static void snd_restart(ArgList args)
+        {
+            SoundSystem.Restart();
+        }
+
+        private static void r_restart(ArgList args)
+        {
+            CvarBool r_restartRequested = ScriptingInterface.GetCvar<CvarBool>("r_restartRequested");
+
+            r_restartRequested.Value = true;
+        }
+        #endregion
     }
 }

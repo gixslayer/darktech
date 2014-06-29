@@ -29,7 +29,7 @@ namespace DarkTech.Engine.Sound
             }
         }
 
-        public MixerChannel(string name, ISampleConsumer output = null)
+        public MixerChannel(ISampleConsumer output, string name = null)
         {
             this.Name = name;
             this.Output = output;

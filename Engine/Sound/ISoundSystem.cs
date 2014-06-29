@@ -4,8 +4,8 @@ namespace DarkTech.Engine.Sound
 {
     public interface ISoundSystem : IDisposable
     {
-        bool CreateContext();
-        void Initialize();
+        bool Initialize();
         void Start();
+        void Restart();
     }
 }

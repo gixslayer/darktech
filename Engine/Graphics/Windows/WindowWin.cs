@@ -25,14 +25,14 @@ namespace DarkTech.Engine.Graphics.Windows
             switch ((WM)msg)
             {
                 case WM.CLOSE:
-                    //close = true;
+                    Engine.RequestShutdown();
                     break;
 
                 case WM.DESTROY:
-                    Win32.PostQuitMessage(0);
+                    //Win32.PostQuitMessage(0);
                     return IntPtr.Zero;
 
-                //case WM.MOVE: // Window position moved.
+         /*       //case WM.MOVE: // Window position moved.
                 case WM.SIZE: // Window resized
                     int i = lParam.ToInt32();
 
@@ -49,7 +49,7 @@ namespace DarkTech.Engine.Graphics.Windows
                 case WM.KEYDOWN:
                 case WM.KEYUP:
                 case WM.CHAR:
-                    break;
+                    break;*/
             }
 
             return Win32.DefWindowProc(hWnd, (WM)msg, wParam, lParam);

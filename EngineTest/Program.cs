@@ -19,20 +19,10 @@ namespace EngineTest
             Console.WriteLine("pre start");
 
             EngineConfiguration config = new EngineConfiguration();
+            config.NetModel = NetModel.Local;
             config.RootDirectory = @"D:\Programming\C#\DarkTech\EngineTest\bin\Debug";
-            config.InitializeClient = false;
-            config.InitializeGraphicsSystem = true;
-            config.InitializeServer = true;
-            config.InitializeSoundSystem = false;
-            config.ClientDLL = "";
+            config.ClientDLL = "TestClient.dll";
             config.ServerDLL = "TestServer.dll";
-            config.UPS = 60;
-            config.WindowTitle = "Test window";
-            config.WindowWidth = 1280;
-            config.WindowHeight = 720;
-            config.WindowX = 0;
-            config.WindowY = 0;
-            config.PrintStreams.Add(Console.Out);
 
             Console.WriteLine(Engine.Start(config));
 

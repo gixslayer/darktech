@@ -1,5 +1,8 @@
 ﻿using DarkTech.Engine.FileSystem;
 using DarkTech.Engine.Graphics;
+using DarkTech.Engine.Graphics.Render;
+using DarkTech.Engine.Graphics.Render.BackEnd;
+using DarkTech.Engine.Graphics.Render.FrontEnd;
 using DarkTech.Engine.Resources;
 using DarkTech.Engine.Scripting;
 using DarkTech.Engine.Sound;
@@ -16,20 +19,23 @@ namespace DarkTech.Engine
 
         public static IWindow CreateWindow()
         {
-            if (Engine.ScriptingInterface.GetCvarValue<bool>("sys_initGraphics")) 
-            {
-                return Platform.CreateWindow();
-            }    
-            else
+            if (Engine.ScriptingInterface.GetCvarValue<NetModel>("sys_netModel") == NetModel.ServerOnly) 
                 return new DummyWindow();
+            else
+                return Platform.CreateWindow();
         }
 
-        public static IRenderBackend CreateRenderBackend()
+        public static IRenderBackEnd CreateRenderBackEnd(RenderQueue renderQueue)
         {
-            if (Engine.ScriptingInterface.GetCvarValue<bool>("sys_initGraphics"))
-                return new BackendOpenGL();
+            if (Engine.ScriptingInterface.GetCvarValue<NetModel>("sys_netModel") == NetModel.ServerOnly)
+                return new DummyBackEnd();
             else
-                return new DummyBackend();
+                return new OpenGLBackEnd(renderQueue);
+        }
+
+        public static IRenderFrontEnd CreateRenderFrontEnd(RenderQueue renderQueue)
+        {
+            return new RenderFrontEnd(renderQueue);
         }
 
         public static ResourceManager CreateResourceManager()
@@ -42,15 +48,17 @@ namespace DarkTech.Engine
             return new ScriptingInterface();
         }
 
+        public static RenderQueue CreateRenderQueue()
+        {
+            return new RenderQueue();
+        }
+
         public static ISoundSystem CreateSoundSystem()
         {
-            // TODO: Create correct sound system
-            /*if (Engine.ScriptingInterface.GetCvarValue<bool>("sys_initSound"))
-                return new SoundSystemOpenAL();
+            if (Engine.ScriptingInterface.GetCvarValue<bool>("snd_noSound") || Engine.ScriptingInterface.GetCvarValue<NetModel>("sys_netModel") == NetModel.ServerOnly)
+                return new DummySoundSystem();
             else
-                return new DummySoundSystem();*/
-
-            return null;
+                return new OpenALSoundSystem();
         }
 
         public static ITimer CreateTimer()

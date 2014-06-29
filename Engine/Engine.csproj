@@ -41,11 +41,14 @@
   <ItemGroup>
     <Compile Include="Debug\Assert.cs" />
     <Compile Include="Debug\Profiler.cs" />
-    <Compile Include="Graphics\DummyBackend.cs" />
+    <Compile Include="Graphics\Render\BackEnd\DummyBackEnd.cs" />
     <Compile Include="Graphics\DummyWindow.cs" />
-    <Compile Include="Graphics\IRenderBackend.cs" />
-    <Compile Include="Graphics\RenderCommand.cs" />
-    <Compile Include="Graphics\RenderQueue.cs" />
+    <Compile Include="Graphics\Render\BackEnd\IRenderBackEnd.cs" />
+    <Compile Include="Graphics\Render\CommandNOP.cs" />
+    <Compile Include="Graphics\Render\FrontEnd\IRenderFrontEnd.cs" />
+    <Compile Include="Graphics\Render\FrontEnd\RenderFrontEnd.cs" />
+    <Compile Include="Graphics\Render\RenderCommand.cs" />
+    <Compile Include="Graphics\Render\RenderQueue.cs" />
     <Compile Include="Graphics\Vsync.cs" />
     <Compile Include="Graphics\Windows\ClassStyles.cs" />
     <Compile Include="Graphics\Windows\IdcStandardCursors.cs" />
@@ -63,6 +66,7 @@
     <Compile Include="Graphics\Windows\WndClass.cs" />
     <Compile Include="NetModel.cs" />
     <Compile Include="Resources\ResourceCategory.cs" />
+    <Compile Include="Sound\DummySoundSystem.cs" />
     <Compile Include="Sound\Filters\GainFilter.cs" />
     <Compile Include="Sound\Filters\InvertFilter.cs" />
     <Compile Include="Sound\Filters\PanFilter.cs" />
@@ -70,6 +74,7 @@
     <Compile Include="Sound\ISoundSystem.cs" />
     <Compile Include="Sound\Mixer.cs" />
     <Compile Include="Sound\MixerChannel.cs" />
+    <Compile Include="Sound\OpenALSoundSystem.cs" />
     <Compile Include="Sound\OpenALVoice.cs" />
     <Compile Include="Sound\Sample.cs" />
     <Compile Include="Sound\ISampleConsumer.cs" />
@@ -88,7 +93,7 @@
     <Compile Include="Temp\Event.cs" />
     <Compile Include="Temp\EventDispatcher.cs" />
     <Compile Include="Temp\EventType.cs" />
-    <Compile Include="Graphics\BackendOpenGL.cs" />
+    <Compile Include="Graphics\Render\BackEnd\OpenGLBackEnd.cs" />
     <Compile Include="IClient.cs" />
     <Compile Include="IServer.cs" />
     <Compile Include="Network\UDPSocket.cs" />
@@ -153,6 +158,7 @@
       <Name>DarkGL</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -8,32 +8,30 @@ namespace DarkTech.Engine
 {
     public static partial class Engine
     {
-        private static float tsRender;
+        private static float tsClient;
+        private static float tsServer;
         private static NetModel netModel;
 
         private static void GameLoop()
         {
+            // Store a reference to the net model cvar and compute the time steps for the client and server.
             netModel = Engine.ScriptingInterface.GetCvarValue<NetModel>("sys_netModel");
-            tsRender = 1.0f / ScriptingInterface.GetCvarValue<int>("sys_maxFps");
-            ITimer timer = Platform.CreateTimer();
-            float accumSystem = 0.0f;
-            float accumServer = 0.0f;
-            float accumRender = 0.0f;
-            float accumDebug = 0.0f;
-            float tsSystem = 1.0f / ScriptingInterface.GetCvarValue<int>("sys_ups");
-            float tsServer = 1.0f / ScriptingInterface.GetCvarValue<int>("sv_ups");
-            float tsDebug = 1.0f;
-            bool shouldRender = ScriptingInterface.GetCvarValue<bool>("sys_initGraphics");
+            tsClient = 1.0f / ScriptingInterface.GetCvarValue<int>("cl_fps");
+            tsServer = 1.0f / ScriptingInterface.GetCvarValue<int>("sv_fps");
 
-            int fps = 0;
-            int ups = 0;
-            int serverups = 0;
+            ITimer timer = Platform.CreateTimer();
+            float accumClient = 0.0f;
+            float accumServer = 0.0f;
+            float accumDebug = 0.0f;
+            float tsDebug = 1.0f;
+
+            int clientFrame = 0;
+            int serverFrame = 0;
 
             if (!timer.Initialize())
+            {
                 Engine.FatalError("Failed to initialize timer for game loop");
-
-            // Spawn threads/acquire context.
-            Engine.RenderBackend.Start();
+            }
 
             while (!shutdownRequested)
             {
@@ -41,103 +39,81 @@ namespace DarkTech.Engine
                 timer.Split();
 
                 // Update accumulators.
-                accumSystem += timer.ElapsedTime;
+                accumClient += timer.ElapsedTime;
                 accumServer += timer.ElapsedTime;
-                accumRender += timer.ElapsedTime;
                 accumDebug += timer.ElapsedTime;
-
-                // System/client update.
-                if (netModel != NetModel.ServerOnly)
-                {
-                    while (accumSystem >= tsSystem)
-                    {
-                        Update(tsSystem);
-                        ups++;
-
-                        accumSystem -= tsSystem;
-                    }
-                }
 
                 // Server update.
                 if (netModel != NetModel.ClientOnly)
                 {
                     while (accumServer >= tsServer)
                     {
-                        server.Update(tsServer);
-                        serverups++;
-
-                        if (netModel == NetModel.ServerOnly)
-                        {
-                            Update(tsServer);
-                            ups++;
-                        }
+                        ServerFrame(tsServer);
+                        serverFrame++;
 
                         accumServer -= tsServer;
                     }
                 }
 
-                // System/client render.
-                if (shouldRender)
+                // Client update.
+                if (netModel != NetModel.ServerOnly)
                 {
-                    if (accumRender >= tsRender)
+                    if (accumClient >= tsClient)
                     {
-                        Render();
-                        fps++;
+                        ClientFrame(tsClient);
+                        clientFrame++;
 
-                        accumRender = 0.0f;
+                        accumClient = 0;
                     }
                 }
 
                 // Debug.
                 if (accumDebug >= tsDebug)
                 {
-                    Engine.Printf("Frontend FPS: {0}", fps);
-                    Engine.Printf("Frontend UPS: {0}", ups);
-                    Engine.Printf("Server UPS: {0}", serverups);
+                    Engine.Printf("Client FPS: {0}", clientFrame);
+                    Engine.Printf("Server FPS: {0}", serverFrame);
 
-                    fps = 0;
-                    ups = 0;
-                    serverups = 0;
+                    clientFrame = 0;
+                    serverFrame = 0;
 
                     accumDebug = 0.0f;
                 }
             }
 
-            // Dispose related resources/context.
-            Engine.RenderBackend.Stop();
+            // Dispose the timer.
             timer.Dispose();
         }
 
-        private static void Update(float dt)
+        private static void ServerFrame(float dt)
         {
-            // System update
+            // Process network (or should this be a dedicated thread?)
+            // Pump event queue
 
-            if (netModel != NetModel.ServerOnly)
-            {
-                client.Update(dt);
-            }
+            server.Update(dt);
         }
 
-        private static void Render()
+        private static void ClientFrame(float dt)
         {
-            // HAX:
-            Engine.RenderQueue.AddCommand(new Graphics.RenderCommand());
+            // Process network (or should this be a dedicated thread?)
+            // Pump event queue
 
-            // System render
+            client.Update(dt);
 
-            // Jump into client.
+            Renderer.BeginFrame();
+
             client.Render();
 
-            // Swap render command queue so the data is presented to the render back-end.
-            Engine.RenderQueue.Swap();
-
-            // Process all render commands.
-            Engine.RenderBackend.Process();
+            Renderer.EndFrame();
         }
 
-        private static void sys_maxFpsCallback(string name, int oldValue, int newValue)
+        private static void sv_fpsCallback(string name, int oldValue, int newValue)
         {
-            tsRender = 1.0f / newValue;
+            tsServer = 1.0f / newValue;
+        }
+
+        private static void cl_fpsCallback(string name, int oldValue, int newValue)
+        {
+            tsClient = 1.0f / newValue;
         }
 
         private static void sys_netModelCallback(string name, NetModel oldValue, NetModel newValue)

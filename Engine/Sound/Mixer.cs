@@ -20,11 +20,11 @@ namespace DarkTech.Engine.Sound
         public Mixer(int channels)
         {
             this.channels = new MixerChannel[channels];
-            this.Master = new MixerChannel("Master", Output);
+            this.Master = new MixerChannel(Output, "Master");
 
             for (int i = 0; i < Channels; i++)
             {
-                this.channels[i] = new MixerChannel(string.Format("Channel {0}", i), Master);
+                this.channels[i] = new MixerChannel(Master);
             }
         }
 
