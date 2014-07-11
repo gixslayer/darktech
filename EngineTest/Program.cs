@@ -1,7 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
+//using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+
+using DarkTech.Common.Containers;
 
 //using DarkTech.Common.Math.Noise;
 using DarkTech.DarkAL;
@@ -24,9 +26,25 @@ namespace EngineTest
             config.ClientDLL = "TestClient.dll";
             config.ServerDLL = "TestServer.dll";
 
-            Console.WriteLine(Engine.Start(config));
+           // Console.WriteLine(Engine.Start(config));
 
             Console.WriteLine("post start");
+
+            IMap<int, int> map = new BSTMap<int, int>();
+
+            map.Add(5, 5);
+            map.Add(0, 0);
+            map.Add(7, 7);
+            map.Add(3, 3);
+            map.Add(4, 4);
+            map.Add(1, 1);
+
+            foreach(KeyValuePair<int, int> pair in map) 
+            {
+                Console.WriteLine("{0}: {1}", pair.Key, pair.Value);
+            }
+
+            Console.Read();
 
             //Render(0x1337243, 32, 1024, 128, "out.jpg");
             //Render(0x1337242, 128, 1024, 128, "out2.jpg");

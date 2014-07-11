@@ -6,12 +6,12 @@
 
         public override void Process() { }
 
-        protected override Sample Transform(ref Sample input)
+        protected override bool Transform(ref Sample input)
         {
             input.left *= Gain;
             input.right *= Gain;
 
-            return input;
+            return true;
         }
     }
 }

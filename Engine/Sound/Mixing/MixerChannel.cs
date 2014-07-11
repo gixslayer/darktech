@@ -46,9 +46,17 @@ namespace DarkTech.Engine.Sound
 
         public void Process()
         {
-            Sample sample = new Sample();
+            // If no samples are buffered don't attempt to mix and output anything to the output.
+            if (buffer.Count == 0)
+            {
+                return;
+            }
 
-            for (int i = 0; i < buffer.Count; i++)
+            // At least one sample in the buffer.
+            Sample sample = buffer[0];
+
+            // Mix any additional samples in the buffer.
+            for (int i = 1; i < buffer.Count; i++)
             {
                 Sample bufferedSample = buffer[i];
 
@@ -56,8 +64,10 @@ namespace DarkTech.Engine.Sound
                 sample.right += bufferedSample.right;
             }
 
+            // Clear the buffer.
             buffer.Clear();
 
+            // Pass the mixer sample to the output.
             Output.Process(ref sample);
         }
 

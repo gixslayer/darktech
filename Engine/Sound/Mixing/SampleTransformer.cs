@@ -7,13 +7,16 @@
 
         public abstract void Process();
 
-        protected abstract Sample Transform(ref Sample input);
+        protected abstract bool Transform(ref Sample input);
 
         public virtual void Process(ref Sample input)
         {
-            Sample temp = Bypass ? input : Transform(ref input);
+            if (Bypass) return;
 
-            Output.Process(ref temp);
+            if (Transform(ref input))
+            {
+                Output.Process(ref input);
+            }
         }
     }
 }

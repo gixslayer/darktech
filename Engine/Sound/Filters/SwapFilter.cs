@@ -4,14 +4,14 @@
     {
         public override void Process() { }
 
-        protected override Sample Transform(ref Sample input)
+        protected override bool Transform(ref Sample input)
         {
             float left = input.left;
 
             input.left = input.right;
             input.right = left;
 
-            return input;
+            return true;
         }
     }
 }
