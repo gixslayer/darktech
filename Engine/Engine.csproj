@@ -39,6 +39,7 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Debug\Assert.cs" />
     <Compile Include="Graphics\Render\BackEnd\DummyBackEnd.cs" />
     <Compile Include="Graphics\DummyWindow.cs" />
     <Compile Include="Graphics\Render\BackEnd\IRenderBackEnd.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Graphics\Windows\Wm.cs" />
     <Compile Include="Graphics\Windows\WndClass.cs" />
     <Compile Include="NetModel.cs" />
+    <Compile Include="Debug\Profiler.cs" />
     <Compile Include="Resources\ResourceCategory.cs" />
     <Compile Include="Sound\ActiveSound.cs" />
     <Compile Include="Sound\CommandNOP.cs" />
@@ -173,9 +175,7 @@
       <Name>DarkGL</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Debug\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
