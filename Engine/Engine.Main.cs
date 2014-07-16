@@ -133,6 +133,9 @@ namespace DarkTech.Engine
             ScriptingInterface.RegisterCvarInt("snd_bufferCount", "Amount of preprocessed buffers", CvarFlag.None, 2, 1, 100);
             ScriptingInterface.RegisterCvarBool("snd_shutdownRequested", "Determines if a sound system shutdown is requested", CvarFlag.WriteProtected, false);
             ScriptingInterface.RegisterCvarBool("snd_noSound", "Disable sound", CvarFlag.None, false);
+            ScriptingInterface.RegisterCvarFloat("snd_distanceModel_exp_bias", "Bias for the exponential distance model", CvarFlag.None, 2f, 1f, 100f);
+            ScriptingInterface.RegisterCvarFloat("snd_distanceModel_invExp_bias", "Bias for the inverse exponential distance model", CvarFlag.None, 2f, 1f, 100f);
+            ScriptingInterface.RegisterCvarEnum<DistanceModel>("snd_distanceModel", "Distance model for positional audio", CvarFlag.None, DistanceModel.Linear);
 
             // w - Window, client should set the appropriate values during initialization.
             ScriptingInterface.RegisterCvarString("w_title", "Window title", CvarFlag.None, "DarkTech Engine");

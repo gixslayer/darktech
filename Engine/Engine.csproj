@@ -39,8 +39,6 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Debug\Assert.cs" />
-    <Compile Include="Debug\Profiler.cs" />
     <Compile Include="Graphics\Render\BackEnd\DummyBackEnd.cs" />
     <Compile Include="Graphics\DummyWindow.cs" />
     <Compile Include="Graphics\Render\BackEnd\IRenderBackEnd.cs" />
@@ -67,14 +65,19 @@
     <Compile Include="NetModel.cs" />
     <Compile Include="Resources\ResourceCategory.cs" />
     <Compile Include="Sound\ActiveSound.cs" />
+    <Compile Include="Sound\CommandNOP.cs" />
+    <Compile Include="Sound\CommandPlaySoundAt.cs" />
+    <Compile Include="Sound\CommandUpdateListener.cs" />
+    <Compile Include="Sound\DistanceModel.cs" />
     <Compile Include="Sound\DummySoundSystem.cs" />
-    <Compile Include="Sound\MixingSystem.cs" />
+    <Compile Include="Sound\Mixing\Filters\GainBalanceFilter.cs" />
+    <Compile Include="Sound\Mixing\MixingSystem.cs" />
     <Compile Include="Sound\Mixing\EffectChain.cs" />
-    <Compile Include="Sound\Filters\DistanceFilter.cs" />
-    <Compile Include="Sound\Filters\GainFilter.cs" />
-    <Compile Include="Sound\Filters\InvertFilter.cs" />
-    <Compile Include="Sound\Filters\PanFilter.cs" />
-    <Compile Include="Sound\Filters\SwapFilter.cs" />
+    <Compile Include="Sound\Mixing\Filters\PositionalFilter.cs" />
+    <Compile Include="Sound\Mixing\Filters\GainFilter.cs" />
+    <Compile Include="Sound\Mixing\Filters\InvertFilter.cs" />
+    <Compile Include="Sound\Mixing\Filters\PanFilter.cs" />
+    <Compile Include="Sound\Mixing\Filters\SwapFilter.cs" />
     <Compile Include="Sound\ISoundSystem.cs" />
     <Compile Include="Sound\Listener.cs" />
     <Compile Include="Sound\Mixing\Mixer.cs" />
@@ -91,8 +94,9 @@
     <Compile Include="Sound\Mixing\SamplePlayer.cs" />
     <Compile Include="Sound\Mixing\SamplePlayerState.cs" />
     <Compile Include="Sound\Mixing\SampleTransformer.cs" />
-    <Compile Include="Sound\SoundCommand.cs" />
-    <Compile Include="Sound\SoundCommandType.cs" />
+    <Compile Include="Sound\CommandPlaySound.cs" />
+    <Compile Include="Sound\Command.cs" />
+    <Compile Include="Sound\CommandType.cs" />
     <Compile Include="SystemFactory.cs" />
     <Compile Include="Temp\Component.cs" />
     <Compile Include="Temp\ComponentEventHandler.cs" />
@@ -169,7 +173,9 @@
       <Name>DarkGL</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Debug\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

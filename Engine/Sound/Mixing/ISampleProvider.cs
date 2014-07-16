@@ -1,4 +1,4 @@
-﻿namespace DarkTech.Engine.Sound
+﻿namespace DarkTech.Engine.Sound.Mixing
 {
     public interface ISampleProvider
     {

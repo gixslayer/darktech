@@ -1,6 +1,6 @@
 ﻿using System;
 
-using DarkTech.Engine.Sound;
+using DarkTech.Engine.Sound.Mixing;
 
 namespace DarkTech.Engine.Resources
 {

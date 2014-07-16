@@ -1,17 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace DarkTech.Engine.Sound
+using DarkTech.Common.Containers;
+
+namespace DarkTech.Engine.Sound.Mixing
 {
     public sealed class SampleBuffer : ISampleConsumer
     {
-        private readonly List<Sample> samples;
+        private readonly IList<Sample> samples;
 
         public int Count { get { return samples.Count; } }
 
-        public SampleBuffer()
+        public SampleBuffer(int initialCapacity = 8)
         {
-            this.samples = new List<Sample>();
+            this.samples = new ArrayList<Sample>(initialCapacity);
         }
 
         public Sample this[int index]

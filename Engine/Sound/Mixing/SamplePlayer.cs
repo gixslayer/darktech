@@ -1,13 +1,14 @@
 ﻿using DarkTech.Engine.Resources;
 
-namespace DarkTech.Engine.Sound
+namespace DarkTech.Engine.Sound.Mixing
 {
     public sealed class SamplePlayer : ISampleProvider
     {
         public delegate Sample InterpolateDelegate(ref Sample a, ref Sample b, float f);
 
+        public static InterpolateDelegate InterpolationModel { get; internal set; }
+
         private readonly SoundData source;
-        private readonly InterpolateDelegate interpolationModel;
         private float balance;
         private float gain;
         private float leftGain;
@@ -41,10 +42,9 @@ namespace DarkTech.Engine.Sound
             }
         }
 
-        public SamplePlayer(SoundDefinition soundDefinition, bool loop, InterpolateDelegate interpolationModel)
+        public SamplePlayer(SoundDefinition soundDefinition)
         {
             this.source = soundDefinition.SoundData;
-            this.interpolationModel = interpolationModel;
             this.balance = soundDefinition.Balance;
             this.gain = soundDefinition.Gain;
             this.index = 0f;
@@ -123,7 +123,7 @@ namespace DarkTech.Engine.Sound
                 Sample nextSample = source[intIndex + 1];
 
                 // Interpolate between the samples based on the fraction.
-                outputSample = interpolationModel(ref baseSample, ref nextSample, fraction);
+                outputSample = InterpolationModel(ref baseSample, ref nextSample, fraction);
             }
 
             // Apply gain to the output sample.

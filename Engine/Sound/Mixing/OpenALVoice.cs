@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using DarkTech.DarkAL;
 
-namespace DarkTech.Engine.Sound
+namespace DarkTech.Engine.Sound.Mixing
 {
     public sealed class OpenALVoice : ISampleConsumer
     {
@@ -44,12 +44,24 @@ namespace DarkTech.Engine.Sound
                 uint bid;
                 byte[] data = GetSampleData();
 
+                sampleBuffer.Clear();
+
                 al.GenBuffers(1, out bid);
                 al.BufferData(bid, AL.FORMAT_STEREO16, data, data.Length, 44100);
 
                 bufferQueue.Enqueue(bid);
 
-                sampleBuffer.Clear();
+                if (bufferQueue.Count >= bufferCount)
+                {
+                    int sourceState;
+
+                    al.GetSourcei(sid, AL.SOURCE_STATE, out sourceState);
+
+                    if (sourceState != AL.PLAYING)
+                    {
+                        al.SourcePlay(sid);
+                    }
+                }
             }
         }
 

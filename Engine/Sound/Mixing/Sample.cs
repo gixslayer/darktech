@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace DarkTech.Engine.Sound
+namespace DarkTech.Engine.Sound.Mixing
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
     public struct Sample

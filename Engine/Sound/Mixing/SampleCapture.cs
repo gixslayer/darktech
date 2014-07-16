@@ -1,11 +1,11 @@
-﻿namespace DarkTech.Engine.Sound
+﻿namespace DarkTech.Engine.Sound.Mixing
 {
-    public sealed class SampleCapture : ISampleConsumer
+    internal sealed class SampleCapture : ISampleConsumer
     {
         public Sample LastCapturedSample { get; private set; }
         public bool CapturedNewSample { get; private set; }
 
-        public SampleCapture()
+        internal SampleCapture()
         {
             this.CapturedNewSample = false;
         }

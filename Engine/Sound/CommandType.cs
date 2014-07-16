@@ -1,9 +1,10 @@
 ﻿namespace DarkTech.Engine.Sound
 {
-    public enum SoundCommandType
+    internal enum CommandType
     {
         NOP,
         PlaySound,
-        PlaySoundAt
+        PlaySoundAt,
+        UpdateListener
     }
 }

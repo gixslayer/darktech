@@ -4,6 +4,7 @@ using System.Threading;
 using DarkTech.Common.Containers;
 using DarkTech.DarkAL;
 using DarkTech.Engine.Scripting;
+using DarkTech.Engine.Sound.Mixing;
 using DarkTech.Engine.Timing;
 
 namespace DarkTech.Engine.Sound
@@ -16,8 +17,8 @@ namespace DarkTech.Engine.Sound
         private readonly OpenALDevice device;
         private readonly MixingSystem mixingSystem;
         private readonly CvarBool snd_shutdownRequested;
-        private readonly IQueue<SoundCommand> frontBuffer;
-        private readonly IQueue<SoundCommand> backBuffer;
+        private readonly IQueue<Command> frontBuffer;
+        private readonly IQueue<Command> backBuffer;
         private readonly object syncRoot;
         private volatile bool initialized;
         private ITimer timer;
@@ -31,8 +32,8 @@ namespace DarkTech.Engine.Sound
             this.device = new OpenALDevice();
             this.mixingSystem = new MixingSystem();
             this.snd_shutdownRequested = Engine.ScriptingInterface.GetCvar<CvarBool>("snd_shutdownRequested");
-            this.frontBuffer = new ArrayQueue<SoundCommand>(32);
-            this.backBuffer = new ArrayQueue<SoundCommand>(32);
+            this.frontBuffer = new ArrayQueue<Command>(32);
+            this.backBuffer = new ArrayQueue<Command>(32);
             this.syncRoot = new object();
             this.initialized = false;
             this.timer = null;
@@ -72,7 +73,7 @@ namespace DarkTech.Engine.Sound
             }
         }
 
-        public void AddCommand(SoundCommand command)
+        public void AddCommand(Command command)
         {
             lock (syncRoot)
             {

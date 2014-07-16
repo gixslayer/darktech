@@ -1,9 +1,7 @@
-﻿namespace DarkTech.Engine.Sound.Filters
+﻿namespace DarkTech.Engine.Sound.Mixing.Filters
 {
     public sealed class SwapFilter : SampleTransformer
     {
-        public override void Process() { }
-
         protected override bool Transform(ref Sample input)
         {
             float left = input.left;

@@ -1,4 +1,4 @@
-﻿namespace DarkTech.Engine.Sound.Filters
+﻿namespace DarkTech.Engine.Sound.Mixing.Filters
 {
     public sealed class PanFilter : SampleTransformer
     {
@@ -16,8 +16,6 @@
         private float balance;
         private float leftGain;
         private float rightGain;
-
-        public override void Process() { }
 
         protected override bool Transform(ref Sample input)
         {

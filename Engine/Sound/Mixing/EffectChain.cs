@@ -1,19 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace DarkTech.Engine.Sound
+using DarkTech.Common.Containers;
+
+namespace DarkTech.Engine.Sound.Mixing
 {
     public sealed class EffectChain : SampleTransformer
     {
         private readonly SampleCapture capture;
-        private readonly List<SampleTransformer> effects;
+        private readonly IList<SampleTransformer> effects;
 
         public int Count { get { return effects.Count; } }
 
         public EffectChain()
         {
             this.capture = new SampleCapture();
-            this.effects = new List<SampleTransformer>();
+            this.effects = new LinkedList<SampleTransformer>();
         }
 
         public SampleTransformer this[int index]
@@ -106,8 +107,6 @@ namespace DarkTech.Engine.Sound
         {
             effects.Clear();
         }
-
-        public override void Process() { }
 
         protected override bool Transform(ref Sample input)
         {

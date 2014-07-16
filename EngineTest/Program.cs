@@ -8,7 +8,6 @@ using DarkTech.Common.Containers;
 //using DarkTech.Common.Math.Noise;
 using DarkTech.DarkAL;
 using DarkTech.Engine;
-using DarkTech.Engine.Debug;
 
 namespace EngineTest
 {
@@ -133,53 +132,6 @@ namespace EngineTest
 
             //Console.WriteLine("DONE");
             //Console.Read();
-        }
-
-        static void TestProfiler()
-        {
-            Profiler profiler = new Profiler();
-            FileStream stream = new FileStream("frame.plog", FileMode.Create, FileAccess.Write);
-
-            for (int i = 0; i < 10; i++)
-            {
-                profiler.BeginFrame();
-
-                profiler.Begin("test1");
-                {
-                    profiler.Begin("test2");
-                    {
-                        profiler.Begin("test3");
-                        {
-                            System.Threading.Thread.Sleep(10);
-                        }
-                        profiler.End("test3");
-
-                        profiler.Begin("test4");
-                        {
-                            System.Threading.Thread.Sleep(20);
-                        }
-                        profiler.End("test4");
-
-                        profiler.Begin("test5");
-                        {
-                            System.Threading.Thread.Sleep(30);
-                        }
-                        profiler.End("test5");
-                    }
-                    profiler.End("test2");
-                }
-                profiler.End("test1");
-
-                profiler.EndFrame();
-
-                FrameResult frameResult = profiler.LastFrame;
-                frameResult.Serialize(stream);
-            }
-
-            stream.Dispose();
-
-            //FileStream dStream = new FileStream("frame.plog", FileMode.Open, FileAccess.Read);
-            //FrameResult deserialized = FrameResult.Deserialize(dStream);
         }
 
         /*static void Render(int seed, int sampleSize, int width, int height, string dest)

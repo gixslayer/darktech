@@ -1,9 +1,7 @@
-﻿namespace DarkTech.Engine.Sound.Filters
+﻿namespace DarkTech.Engine.Sound.Mixing.Filters
 {
     public sealed class InvertFilter : SampleTransformer
     {
-        public override void Process() { }
-
         protected override bool Transform(ref Sample input)
         {
             input.left = -input.left;

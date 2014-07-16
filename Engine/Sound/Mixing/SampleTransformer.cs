@@ -1,13 +1,11 @@
-﻿namespace DarkTech.Engine.Sound
+﻿namespace DarkTech.Engine.Sound.Mixing
 {
     public abstract class SampleTransformer : ISampleProvider, ISampleConsumer
     {
         public ISampleConsumer Output { get; set; }
         public bool Bypass { get; set; }
 
-        public abstract void Process();
-
-        protected abstract bool Transform(ref Sample input);
+        public virtual void Process() { }
 
         public virtual void Process(ref Sample input)
         {
@@ -18,5 +16,7 @@
                 Output.Process(ref input);
             }
         }
+
+        protected abstract bool Transform(ref Sample input);
     }
 }

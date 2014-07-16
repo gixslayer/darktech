@@ -1,47 +1,45 @@
-﻿using DarkTech.Engine.Sound.Filters;
+﻿using System;
 
-namespace DarkTech.Engine.Sound
+using DarkTech.Engine.Sound.Mixing.Filters;
+
+namespace DarkTech.Engine.Sound.Mixing
 {
     public sealed class MixerChannel : ISampleConsumer, ISampleProvider
     {
         private readonly SampleBuffer buffer;
-        private readonly GainFilter gainFilter;
-        private readonly PanFilter panFilter;
+        private readonly GainBalanceFilter filter;
+        private readonly EffectChain effectChain;
+        private readonly ISampleConsumer output;
 
-        public string Name { get; set; }
-        public ISampleConsumer Output { get; set; }
+        public ISampleConsumer Output 
+        {
+            get { return output; }
+            set { throw new NotSupportedException(); }
+        }
+        public EffectChain EffectChain 
+        { 
+            get { return effectChain; }
+        }
         public float Gain
         {
-            get { return gainFilter.Gain; }
-            set
-            {
-                gainFilter.Gain = value;
-                gainFilter.Bypass = FloatEqual(value, 1f);
-            }
+            get { return filter.Gain; }
+            set { filter.Gain = value; }
         }
         public float Balance
         {
-            get { return panFilter.Balance; }
-            set 
-            { 
-                panFilter.Balance = value;
-                panFilter.Bypass = FloatEqual(value, 0f);
-            }
+            get { return filter.Balance; }
+            set { filter.Balance = value; }
         }
-
-        public MixerChannel(ISampleConsumer output, string name = null)
+        
+        internal MixerChannel(ISampleConsumer output)
         {
-            this.Name = name;
-            this.Output = output;
             this.buffer = new SampleBuffer();
-            this.gainFilter = new GainFilter();
-            this.panFilter = new PanFilter();
+            this.filter = new GainBalanceFilter();
+            this.effectChain = new EffectChain();
+            this.output = output;
 
-            Gain = 1f;
-            Balance = 0f;
-
-            gainFilter.Output = panFilter;
-            panFilter.Output = buffer;
+            filter.Output = effectChain;
+            effectChain.Output = buffer;
         }
 
         public void Process()
@@ -67,25 +65,13 @@ namespace DarkTech.Engine.Sound
             // Clear the buffer.
             buffer.Clear();
 
-            // Pass the mixer sample to the output.
-            Output.Process(ref sample);
+            // Pass the mixed sample to the output.
+            output.Process(ref sample);
         }
 
         public void Process(ref Sample input)
         {
-            gainFilter.Process(ref input);
-        }
-
-        private static bool FloatEqual(float left, float right, float margin = 0.001f)
-        {
-            // Calculate difference.
-            float diff = left - right;
-
-            // ABS difference.
-            if (diff < 0f) diff = -diff;
-
-            // Test against the margin.
-            return diff <= margin;
+            filter.Process(ref input);
         }
     }
 }
