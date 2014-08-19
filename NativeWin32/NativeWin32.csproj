@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{320FEBED-280F-4ABE-BD03-F4277E83AB36}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DarkTech.NativeWin32</RootNamespace>
+    <AssemblyName>NativeWin32</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Gdi32\PFDLayerType.cs" />
+    <Compile Include="Gdi32\PFDFlags.cs" />
+    <Compile Include="Gdi32\PixelFormatDescriptor.cs" />
+    <Compile Include="Gdi32\PFDPixelType.cs" />
+    <Compile Include="User32\ChangeDisplaySettingsFlags.cs" />
+    <Compile Include="User32\ClassStyles.cs" />
+    <Compile Include="User32\DevMode.cs" />
+    <Compile Include="User32\DisplayChange.cs" />
+    <Compile Include="User32\DisplayDevice.cs" />
+    <Compile Include="User32\DisplayDeviceStateFlags.cs" />
+    <Compile Include="User32\DM.cs" />
+    <Compile Include="Gdi32\Gdi32.cs" />
+    <Compile Include="User32\HIDUsage.cs" />
+    <Compile Include="User32\HIDUsagePage.cs" />
+    <Compile Include="User32\IdcStandardCursors.cs" />
+    <Compile Include="Kernel32\Kernel32.cs" />
+    <Compile Include="Kernel32\FormatMessageFlags.cs" />
+    <Compile Include="User32\Msg.cs" />
+    <Compile Include="User32\PeekMessageMode.cs" />
+    <Compile Include="Point.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rect.cs" />
+    <Compile Include="User32\RawHID.cs" />
+    <Compile Include="User32\RawInput.cs" />
+    <Compile Include="User32\RawInputCommand.cs" />
+    <Compile Include="User32\RawInputDevice.cs" />
+    <Compile Include="User32\RawInputDeviceFlags.cs" />
+    <Compile Include="User32\RawInputHeader.cs" />
+    <Compile Include="User32\RawInputType.cs" />
+    <Compile Include="User32\RawKeyboard.cs" />
+    <Compile Include="User32\RawKeyboardFlags.cs" />
+    <Compile Include="User32\RawMouse.cs" />
+    <Compile Include="User32\RawMouseButtonFlags.cs" />
+    <Compile Include="User32\RawMouseFlags.cs" />
+    <Compile Include="User32\ShowWindowCommands.cs" />
+    <Compile Include="Gdi32\StockObjects.cs" />
+    <Compile Include="User32\SystemIcons.cs" />
+    <Compile Include="User32\SystemMetric.cs" />
+    <Compile Include="User32\User32.cs" />
+    <Compile Include="User32\WindowStyles.cs" />
+    <Compile Include="User32\WindowStylesEx.cs" />
+    <Compile Include="User32\WindowMessage.cs" />
+    <Compile Include="User32\WndClass.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

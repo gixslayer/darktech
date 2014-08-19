@@ -5,6 +5,7 @@
         NOP,
         PlaySound,
         PlaySoundAt,
+        PlaySoundAtEntity,
         UpdateListener
     }
 }

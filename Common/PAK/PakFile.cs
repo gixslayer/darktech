@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 
+using DarkTech.Common.Containers;
 using DarkTech.Common.IO;
 
 namespace DarkTech.Common.PAK
@@ -12,21 +12,18 @@ namespace DarkTech.Common.PAK
     /// </summary>
     public sealed class PakFile
     {
-        private readonly Dictionary<string, PakEntry> entries;
+        private readonly IMap<string, PakEntry> map;
+        private readonly IList<PakEntry> entries;
         private readonly Stream stream;
 
         /// <summary>
         /// The amount of entries within the package file.
         /// </summary>
-        public int EntryCount { get { return entries.Count; } }
+        public int EntryCount { get { return map.Count; } }
         /// <summary>
-        /// The collection of entry names within the package file.
+        /// The list of <see cref="PakEntry"/> entries within the package file.
         /// </summary>
-        public Dictionary<string, PakEntry>.KeyCollection EntryNames { get { return entries.Keys; } }
-        /// <summary>
-        /// The collection of <see cref="PakEntry"/> entries within the package files.
-        /// </summary>
-        public Dictionary<string, PakEntry>.ValueCollection Entries { get { return entries.Values; } }
+        public IList<PakEntry> Entries { get { return entries; } }
 
         /// <summary>
         /// Creates a new <see cref="PakFile"/> instance and loads the package from the source stream.
@@ -48,36 +45,21 @@ namespace DarkTech.Common.PAK
                 throw new ArgumentException("Stream must be able to seek", "stream");
 
             this.stream = stream;
-            this.entries = new Dictionary<string, PakEntry>();
+            this.map = new HashMap<string, PakEntry>();
+            this.entries = new ArrayList<PakEntry>();
 
             PakEntry entry;
+            DataStream dataStream = new DataStream(stream);
 
             while (stream.Position < stream.Length)
             {
                 try
                 {
-                    entry = PakEntry.Deserialize(stream);
-                }
-                catch (PakException e)
-                {
-                    throw e;
-                }
-                catch (StreamException e)
-                {
-                    throw new PakException(e.Message);
+                    entry = PakEntry.Deserialize(dataStream);
                 }
                 catch (Exception e)
                 {
                     throw new PakException(e.Message);
-                }
-
-                // Only add the entry if it isn't marked as removed.
-                if (!entry.Flags.HasFlag(PakEntryFlags.Removed))
-                {
-                    if (entries.ContainsKey(entry.Name))
-                        throw PakException.DUPLICATE_ENTRY;
-
-                    entries.Add(entry.Name, entry);
                 }
             }
         }
@@ -109,7 +91,7 @@ namespace DarkTech.Common.PAK
         /// <returns>Returns <c>true</c> if an entry with the specified <paramref name="name"/> exists within the package, otherwise <c>false</c> is returned./</returns>
         public bool HasEntry(string name)
         {
-            return entries.ContainsKey(name);
+            return map.Contains(name);
         }
 
         /// <summary>Returns the <see cref="PakEntry"/> that is linked to the specified <paramref name="name"/>.</summary>
@@ -123,7 +105,7 @@ namespace DarkTech.Common.PAK
             if (!HasEntry(name))
                 throw new ArgumentException("Could not find entry", "name");
 
-            return entries[name];
+            return map[name];
         }
 
         /// <summary>Returns a stream that provides access to the package entry data.</summary>
@@ -132,18 +114,14 @@ namespace DarkTech.Common.PAK
         /// <exception cref="ArgumentException">
         /// Thrown when the specified <paramref name="name"/> could not be found.
         /// </exception>
-        /// <remarks>
-        /// Depending on the <see cref="PakEntryFlags"/> the stream type returned can be a compression stream such as <see cref="DeflateStream"/> and <see cref="GZipStream"/>.
-        /// </remarks>
-        public Stream GetEntryStream(string name)
+        public SubStream GetEntryStream(string name)
         {
             if (!HasEntry(name))
                 throw new ArgumentException("Could not find entry", "name");
 
             PakEntry entry = GetEntry(name);
-            SubStream pakStream = new SubStream(stream, entry.Offset, entry.Size);
 
-            return GetStreamForEntry(pakStream, entry);
+            return new SubStream(stream, entry.Offset, entry.Size);
         }
 
         /// <summary>Returns a list of all entries found within the <paramref name="stream"/>.</summary>
@@ -157,15 +135,16 @@ namespace DarkTech.Common.PAK
         /// <returns>
         /// Returns a list of all entries found within the <paramref name="stream"/>.
         /// </returns>
-        public static List<PakEntry> GetEntries(Stream stream)
+        public static IList<PakEntry> GetEntries(Stream stream)
         {
-            List<PakEntry> entries = new List<PakEntry>();
+            IList<PakEntry> entries = new ArrayList<PakEntry>();
+            DataStream dataStream = new DataStream(stream);
 
             while (stream.Position < stream.Length)
             {
                 try
                 {
-                    entries.Add(PakEntry.Deserialize(stream));
+                    entries.Add(PakEntry.Deserialize(dataStream));
                 }
                 catch (Exception e)
                 {
@@ -174,22 +153,6 @@ namespace DarkTech.Common.PAK
             }
 
             return entries;
-        }
-
-        private static Stream GetStreamForEntry(SubStream stream, PakEntry entry)
-        {
-            if (entry.Flags.HasFlag(PakEntryFlags.Deflate))
-            {
-                return new DeflateStream(stream, CompressionMode.Decompress, true);
-            }
-            else if (entry.Flags.HasFlag(PakEntryFlags.GZip))
-            {
-                return new GZipStream(stream, CompressionMode.Decompress, true);
-            }
-            else
-            {
-                return stream;
-            }
         }
     }
 }

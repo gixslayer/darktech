@@ -1,34 +1,26 @@
 ﻿using DarkTech.Common.Containers;
-using DarkTech.Common.Utils;
 
 namespace DarkTech.Engine.Sound.Mixing
 {
     internal sealed class MixingSystem
     {
-        private readonly IList<SamplePlayer> activePlayers;
-        private readonly IList<SamplePlayer> stoppedPlayers;
+        private readonly IList<SampleProvider> activeProviders;
+        private readonly IList<SampleProvider> stoppedProviders;
+        private readonly IList<Channel> activeChannels;
+        private readonly IList<Channel> stoppedChannels;
+        private readonly SampleBuffer masterBuffer;
         private readonly OpenALVoice openALVoice;
-        private readonly Mixer mixer;
-        private readonly SharedReference<Listener> listener;
+        private readonly Listener listener;
 
         internal MixingSystem()
         {
-            int mixerChannels = Engine.ScriptingInterface.GetCvarValue<int>("snd_mixerChannels");
-
-            this.activePlayers = new LinkedList<SamplePlayer>();
-            this.stoppedPlayers = new ArrayList<SamplePlayer>(8);
+            this.activeProviders = new LinkedList<SampleProvider>();
+            this.stoppedProviders = new ArrayList<SampleProvider>(8);
+            this.activeChannels = new LinkedList<Channel>();
+            this.stoppedChannels = new ArrayList<Channel>(8);
+            this.masterBuffer = new SampleBuffer(64);
             this.openALVoice = new OpenALVoice();
-            this.mixer = new Mixer(mixerChannels, openALVoice);
-            this.listener = new SharedReference<Listener>(null);
-
-            mixer.Master.Gain = Engine.ScriptingInterface.GetCvarValue<float>("snd_volume");
-            mixer.Master.Balance = Engine.ScriptingInterface.GetCvarValue<float>("snd_balance");
-
-            for (int i = 0; i < mixerChannels; i++)
-            {
-                mixer[i].Gain = Engine.ScriptingInterface.GetCvarValue<float>(string.Format("snd_mixerChannel{0}_gain", i));
-                mixer[i].Balance = Engine.ScriptingInterface.GetCvarValue<float>(string.Format("snd_mixerChannel{0}_balance", i));
-            }
+            this.listener = new Listener();
         }
 
         public void Process(IQueue<Command> commands, int samples)
@@ -61,6 +53,10 @@ namespace DarkTech.Engine.Sound.Mixing
                     PlaySoundAt((CommandPlaySoundAt)command);
                     break;
 
+                case CommandType.PlaySoundAtEntity:
+                    PlaySoundAtEntity((CommandPlaySoundAtEntity)command);
+                    break;
+
                 case CommandType.UpdateListener:
                     UpdateListener((CommandUpdateListener)command);
                     break;
@@ -79,7 +75,7 @@ namespace DarkTech.Engine.Sound.Mixing
             player.Output = command.EffectChain;
             command.EffectChain.Output = channel;
 
-            activePlayers.Add(player);
+            activeProviders.Add(player);
         }
 
         private void PlaySoundAt(CommandPlaySoundAt command)
@@ -92,42 +88,92 @@ namespace DarkTech.Engine.Sound.Mixing
 
             // Add positional filter after effect chain
 
-            activePlayers.Add(player);
+            activeProviders.Add(player);
+        }
+
+        private void PlaySoundAtEntity(CommandPlaySoundAtEntity command)
+        {
+            SamplePlayer player = new SamplePlayer(command.SoundDefinition);
+            MixerChannel channel = command.MixerChannelIndex == -1 ? mixer.Master : mixer[command.MixerChannelIndex];
+
+            player.Output = command.EffectChain;
+            command.EffectChain.Output = channel;
+
+            // Add positional filter after effect chain
+
+            activeProviders.Add(player);
+
+            // Register trackedActiveSound
         }
 
         private void UpdateListener(CommandUpdateListener command)
         {
-            command.Listener.IsDirty = true;
-
-            listener.UpdateReference(command.Listener);
+            listener.Update(command.Listener);
         }
 
         private void ProcessSample()
         {
-            foreach (SamplePlayer player in activePlayers)
+            // Enumerate all active providers.
+            foreach (SampleProvider provider in activeProviders)
             {
-                player.Process();
+                // Let the provider process one sample.
+                provider.Process();
 
-                if (player.State == SamplePlayerState.Stopped)
+                // If the provider has stopped mark it for removal.
+                if (provider.State == SampleProviderState.Stopped)
                 {
-                    stoppedPlayers.Add(player);
+                    stoppedProviders.Add(provider);
                 }
             }
 
-            mixer.Process();
-            openALVoice.Process();
-
-            if (stoppedPlayers.Count != 0)
+            // Enumerate all active channels.
+            foreach (Channel channel in activeChannels)
             {
-                foreach (SamplePlayer player in stoppedPlayers)
+                // Let the channel mix all buffered samples and apply the effect chain to the mixed sample.
+                // All the generated samples are buffered into the master buffer.
+                if (!channel.Mix())
                 {
-                    activePlayers.Remove(player);
+                    // If the channel did not mix anything mark it for removal.
+                    stoppedChannels.Add(channel);
                 }
-
-                stoppedPlayers.Clear();
             }
 
-            listener.Value.IsDirty = false;
+            // Mix all the buffered samples in the master buffer.
+            Sample finalSample = new Sample(0f, 0f);
+
+            foreach (Sample sample in masterBuffer)
+            {
+                finalSample.left += sample.left;
+                finalSample.right += sample.right;
+            }
+
+            // Send the final mixed sample to the OpenAL voice.
+            openALVoice.Process(ref finalSample);
+
+            // Remove all the marked providers.
+            if (stoppedProviders.Count != 0)
+            {
+                foreach (SampleProvider provider in stoppedProviders)
+                {
+                    activeProviders.Remove(provider);
+                }
+
+                stoppedProviders.Clear();
+            }
+
+            // Remove all the marked channels.
+            if (stoppedChannels.Count != 0)
+            {
+                foreach (Channel channel in stoppedChannels)
+                {
+                    activeChannels.Remove(channel);
+                }
+
+                stoppedChannels.Clear();
+            }
+
+            listener.IsDirty = false;
+            masterBuffer.Clear();
         }
     }
 }

@@ -1,140 +1,39 @@
-﻿using System;
-
-using DarkTech.Common.Containers;
+﻿using DarkTech.Common.Containers;
 
 namespace DarkTech.Engine.Sound.Mixing
 {
-    public sealed class EffectChain : SampleTransformer
+    internal sealed class EffectChain
     {
-        private readonly SampleCapture capture;
-        private readonly IList<SampleTransformer> effects;
+        private readonly SampleBuffer outputBuffer;
+        private readonly DoubleLinkedList<Effect> effects;
 
-        public int Count { get { return effects.Count; } }
-
-        public EffectChain()
+        public EffectChain(SampleBuffer outputBuffer)
         {
-            this.capture = new SampleCapture();
-            this.effects = new LinkedList<SampleTransformer>();
+            this.outputBuffer = outputBuffer;
+            this.effects = new DoubleLinkedList<Effect>();
         }
 
-        public SampleTransformer this[int index]
+        public void Process(ref Sample sample)
         {
-            get
+            foreach (Effect effect in effects)
             {
-                if (index < 0 || index >= effects.Count)
-                    throw new ArgumentOutOfRangeException("index");
-
-                return effects[index];
+                effect.Process(ref sample);
             }
         }
 
-        public void AttachEffect(SampleTransformer effect)
+        public bool Apply()
         {
-            // Set the output of the effect to the capture.
-            effect.Output = capture;
+            bool result = false;
 
-            // If an effect already exists, redirect the output of the current last effect to the new effect.
-            if (effects.Count != 0)
+            foreach (Effect effect in effects)
             {
-                effects[effects.Count - 1].Output = effect;
+                if (effect.Apply())
+                {
+                    result = true;
+                }
             }
 
-            // Add the new effect to the chain.
-            effects.Add(effect);
-        }
-
-        public void DetachEffect()
-        {
-            // Make sure there is at least one effect in the chain.
-            if (effects.Count == 0)
-            {
-                return;
-            }
-
-            // Remove the last effect in the chain.
-            effects.RemoveAt(effects.Count - 1);
-
-            // If the just removed effect wasn't the only effect, update the output of the new last effect to the capture.
-            if (effects.Count != 0)
-            {
-                effects[effects.Count - 1].Output = capture;
-            }
-        }
-
-        public void InsertEffect(SampleTransformer effect, int index)
-        {
-            if (index < 0 || index > Count)
-                throw new ArgumentOutOfRangeException("index");
-
-            // Get the current effect and the preceding effect at the target index.
-            SampleTransformer previousEffect = index == 0 ? null : effects[index - 1];
-            SampleTransformer currentEffect = index == Count ? null : effects[index];
-
-            // If there was an effect in front of the target index, update its output to the new effect.
-            if (previousEffect != null)
-            {
-                previousEffect.Output = effect;
-            }
-
-            // Set the output of the new effect to the old effect at the target index.
-            // If the new effect is inserted at the end of the chain, set the output to the capture as no effect currently exists at the target index.
-            effect.Output = currentEffect == null ? capture : (ISampleConsumer)currentEffect;
-
-            // Insert the new effect into the chain.
-            effects.Insert(index, effect);
-        }
-
-        public void RemoveEffect(int index)
-        {
-            if (index < 0 || index >= Count)
-                throw new ArgumentOutOfRangeException("index");
-
-            // Get the target effect and the preceding effect at the target index.
-            SampleTransformer previousEffect = index == 0 ? null : effects[index - 1];
-            SampleTransformer targetEffect = effects[index];
-
-            // If there was an effect preceding the target effect, update its output to the output of the target effect.
-            if (previousEffect != null)
-            {
-                previousEffect.Output = targetEffect.Output;
-            }
-
-            // Remove the target effect from the chain.
-            effects.RemoveAt(index);
-        }
-
-        public void RemoveAllEffects()
-        {
-            effects.Clear();
-        }
-
-        protected override bool Transform(ref Sample input)
-        {
-            // If there are no effects in the chain, simply pass the input directly to the output.
-            if (effects.Count == 0)
-            {
-                Output.Process(ref input);
-
-                return true;
-            }
-
-            // Pass the input to the first effect in the chain.
-            effects[0].Process(ref input);
-
-            // If an effect decided to cull the sound no sample will be written to the capture, exit here.
-            if (!capture.CapturedNewSample)
-            {
-                return false;
-            }
-
-            // Get the sample generated by the effect chain and pass it to the output.
-            Sample capturedSample = capture.LastCapturedSample;
-            Output.Process(ref capturedSample);
-
-            // Mark the captured sample as read.
-            capture.MarkRead();
-
-            return true;
+            return result;
         }
     }
 }

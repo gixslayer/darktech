@@ -4,7 +4,7 @@ using DarkTech.Common.Containers;
 
 namespace DarkTech.Engine.Sound.Mixing
 {
-    public sealed class SampleBuffer : ISampleConsumer
+    public sealed class SampleBuffer : System.Collections.Generic.IEnumerable<Sample>
     {
         private readonly IList<Sample> samples;
 
@@ -33,7 +33,7 @@ namespace DarkTech.Engine.Sound.Mixing
             }
         }
 
-        public void Process(ref Sample input)
+        public void Add(ref Sample input)
         {
             samples.Add(input);
         }
@@ -41,6 +41,16 @@ namespace DarkTech.Engine.Sound.Mixing
         public void Clear()
         {
             samples.Clear();
+        }
+
+        public System.Collections.Generic.IEnumerator<Sample> GetEnumerator()
+        {
+            return samples.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return samples.GetEnumerator();
         }
     }
 }

@@ -18,6 +18,7 @@ namespace DarkTech.Common.Math
 
         public Vector2f XY { get { return new Vector2f(x, y); } }
         public Vector2f YZ { get { return new Vector2f(y, z); } }
+        public Vector2f XZ { get { return new Vector2f(x, z); } }
 
         public Vector3f(float x, float y, float z)
         {

@@ -58,7 +58,7 @@ namespace DarkTech.Engine
             if (Engine.ScriptingInterface.GetCvarValue<bool>("snd_noSound") || Engine.ScriptingInterface.GetCvarValue<NetModel>("sys_netModel") == NetModel.ServerOnly)
                 return new DummySoundSystem();
             else
-                return new OpenALSoundSystem();
+                return new SoundSystem();
         }
 
         public static ITimer CreateTimer()

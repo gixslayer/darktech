@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
+using DarkTech.Common.Containers;
 using DarkTech.Common.IO;
 using DarkTech.Common.PAK;
 
@@ -12,14 +12,12 @@ namespace DarkTech.PakUtil
     {
         static void Main(string[] args)
         {
-            Dictionary<string, Command> commands = new Dictionary<string, Command>();
+            IMap<string, Command> commands = new HashMap<string, Command>();
 
-            commands.Add("-c", new Command(new Action<string, string, string>(CreatePackage), "-if", "-of", "-c"));
+            commands.Add("-c", new Command(new Action<string, string>(CreatePackage), "-if", "-of"));
             commands.Add("-e", new Command(new Action<string, string>(ExtractPackage), "-if", "-of"));
-            commands.Add("-C", new Command(new Action<string, string>(CleanPackage), "-if", "-of"));
             commands.Add("-E", new Command(new Action<string, string, string>(ExtractEntry), "-if", "-e", "-of"));
-            commands.Add("-a", new Command(new Action<string, string, string, string>(AddEntry), "-of", "-if", "-e", "-c"));
-            commands.Add("-r", new Command(new Action<string, string>(RemoveEntry), "-if", "-e"));
+            commands.Add("-a", new Command(new Action<string, string, string>(AddEntry), "-of", "-if", "-e"));
             commands.Add("-l", new Command(new Action<string>(ListEntries), "-if"));
             commands.Add("-h", new Command(new Action(PrintHelp)));
 
@@ -30,7 +28,7 @@ namespace DarkTech.PakUtil
 
             Command command = null;
 
-            if (commands.ContainsKey(args[0]))
+            if (commands.Contains(args[0]))
             {
                 command = commands[args[0]];
             }
@@ -41,10 +39,10 @@ namespace DarkTech.PakUtil
             }
         }
 
-        private static void CreatePackage(string inputFile, string outputFile, string compression)
+        private static void CreatePackage(string inputFile, string outputFile)
         {
             FileStream outputStream = OpenStream(outputFile, FileMode.Create, FileAccess.Write);
-            PakEntryFlags flags = DetectCompression(compression);
+            DataStream dataStream = new DataStream(outputStream);
 
             if (!inputFile.EndsWith("\\"))
             {
@@ -56,7 +54,7 @@ namespace DarkTech.PakUtil
                 string entryName = file.Substring(inputFile.Length);
                 FileStream inputStream = OpenStream(file, FileMode.Open, FileAccess.Read);
 
-                PakEntry.Serialize(outputStream, inputStream, entryName, flags);
+                PakEntry.Serialize(dataStream, inputStream, entryName);
 
                 inputStream.Dispose();
             }
@@ -98,56 +96,6 @@ namespace DarkTech.PakUtil
             pakFile.Close();
         }
 
-        private static void CleanPackage(string inputFile, string outputFile)
-        {
-            FileStream inputStream = OpenStream(inputFile, FileMode.Open, FileAccess.Read);
-            FileStream outputStream = OpenStream(outputFile, FileMode.Create, FileAccess.Write);
-            List<PakEntry> entries = ReadEntries(inputStream);
-            byte[] buffer = new byte[4096];
-
-            foreach (PakEntry entry in entries)
-            {
-                // Skip removed entries.
-                if (entry.HasFlag(PakEntryFlags.Removed))
-                {
-                    continue;
-                }
-
-                // Rewrite the entry header.
-                byte[] nameBuffer = PakEntry.ENCODING.GetBytes(entry.Name);
-
-                outputStream.WriteUShort((ushort)nameBuffer.Length);
-                outputStream.Write(nameBuffer);
-                outputStream.WriteByte((byte)entry.Flags);
-                outputStream.WriteUInt((uint)entry.Size);
-
-                // Copy the entry data to the output stream.
-                long currentInputPosition = inputStream.Position;
-                long bytesToCopy = entry.Size;
-
-                inputStream.Position = entry.Offset;
-
-                while (bytesToCopy > 0)
-                {
-                    int bytesToRead = bytesToCopy > buffer.Length ? buffer.Length : (int)bytesToCopy;
-
-                    if (!inputStream.SaveRead(buffer, 0, bytesToRead))
-                    {
-                        Console.WriteLine("!!!ERROR!!! CleanPackage:Unexpected end of stream");
-
-                        Environment.Exit(1);
-                    }
-
-                    outputStream.Write(buffer, 0, bytesToRead);
-
-                    bytesToCopy -= bytesToRead;
-                }
-            }
-
-            outputStream.Dispose();
-            inputStream.Dispose();
-        }
-
         private static void ExtractEntry(string inputFile, string entryName, string outputFile)
         {
             FileStream inputStream = OpenStream(inputFile, FileMode.Open, FileAccess.Read);
@@ -177,40 +125,16 @@ namespace DarkTech.PakUtil
             pakFile.Close();
         }
 
-        private static void AddEntry(string outputFile, string inputFile, string entryName, string compression)
+        private static void AddEntry(string outputFile, string inputFile, string entryName)
         {
             FileStream outputStream = OpenStream(outputFile, FileMode.Append, FileAccess.Write);
             FileStream inputStream = OpenStream(inputFile, FileMode.Open, FileAccess.Read);
-            PakEntryFlags flags = DetectCompression(compression);
+            DataStream dataStream = new DataStream(outputStream);
 
-            PakEntry.Serialize(outputStream, inputStream, entryName, flags);
+            PakEntry.Serialize(dataStream, inputStream, entryName);
 
             inputStream.Dispose();
             outputStream.Dispose();
-        }
-
-        private static void RemoveEntry(string inputFile, string entryName)
-        {
-            FileStream inputStream = OpenStream(inputFile, FileMode.Open, FileAccess.ReadWrite);
-            PakFile pakFile = OpenPak(inputStream);
-
-            if (!pakFile.HasEntry(entryName))
-            {
-                Console.WriteLine("!!!ERROR!!! RemoveEntry:Could not find entry {0}", entryName);
-
-                Environment.Exit(1);
-            }
-
-            PakEntry entry = pakFile[entryName];
-            entry.SetFlag(PakEntryFlags.Removed);
-
-            // Set the stream position to the flag byte.
-            inputStream.Position = entry.Offset - 5;
-
-            // Write the new flag byte.
-            inputStream.WriteByte((byte)entry.Flags);
-
-            pakFile.Close();
         }
 
         private static void ListEntries(string inputFile)
@@ -219,13 +143,13 @@ namespace DarkTech.PakUtil
             // Package: {inputFile}
             // Total entries: {entries.Count]
             //
-            // Index | Name | Flags | Offset | Size
-            // ------|------|-------|-------|------
+            // Index | Name | Offset | Size
+            // ------|------|--------|------
 
             FileStream inputStream = OpenStream(inputFile, FileMode.Open, FileAccess.Read);
-            List<PakEntry> entries = ReadEntries(inputStream);
-            List<List<string>> columnData = new List<List<string>>();
-            string[] columnHeaders = { "Index", "Name", "Flags", "Offset", "Size" };
+            IList<PakEntry> entries = ReadEntries(inputStream);
+            IList<IList<string>> columnData = new ArrayList<IList<string>>(entries.Count);
+            string[] columnHeaders = { "Index", "Name", "Offset", "Size" };
             int columnCount = columnHeaders.Length;
             int[] columnLength = new int[columnCount];
             
@@ -234,11 +158,10 @@ namespace DarkTech.PakUtil
 
             foreach (PakEntry entry in entries)
             {
-                List<string> row = new List<string>();
+                IList<string> row = new ArrayList<string>(4);
 
                 row.Add(entryIndex.ToString());
                 row.Add(entry.Name);
-                row.Add(entry.Flags.ToString());
                 row.Add(entry.Offset.ToString("X2"));
                 row.Add(entry.Size.ToString("X2"));
 
@@ -252,7 +175,7 @@ namespace DarkTech.PakUtil
             {
                 int length = columnHeaders[i].Length;
 
-                foreach (List<string> row in columnData)
+                foreach (IList<string> row in columnData)
                 {
                     int fieldLength = row[i].Length;
 
@@ -301,7 +224,7 @@ namespace DarkTech.PakUtil
             }
 
             // Write rows.
-            foreach (List<string> row in columnData)
+            foreach (IList<string> row in columnData)
             {
                 for (int i = 0; i < columnCount; i++)
                 {
@@ -326,7 +249,6 @@ namespace DarkTech.PakUtil
             Console.WriteLine("-c   Create a new package from a source directory");
             Console.WriteLine("     -if {path}  The path to the source directory");
             Console.WriteLine("     -of {path}  The destination path for the package");
-            Console.WriteLine("     -c  {comp}  The compression to use (valid options: none/gzip/deflate)");
             Console.WriteLine("-e   Extract an entire package to a directory");
             Console.WriteLine("     -if {path}  The path to the package");
             Console.WriteLine("     -of {path}  The destination directory for the entries");
@@ -341,26 +263,12 @@ namespace DarkTech.PakUtil
             Console.WriteLine("     -if {path}  The path to the file to add");
             Console.WriteLine("     -of {path}  The destination path for the package");
             Console.WriteLine("     -e  {name}  The name of the entry");
-            Console.WriteLine("     -c  {comp}  The compression to use (valid options: none/gzip/deflate)");
             Console.WriteLine("-r   Remove an entry from a package");
             Console.WriteLine("     -if {path}  The path to the package");
             Console.WriteLine("     -e  {name}  The name of the entry");
             Console.WriteLine("-l   List all entries in a package (including entries marked as removed)");
             Console.WriteLine("     -if {path}  The path to the package");
             Console.WriteLine("-h   Display this help message");
-        }
-
-        private static PakEntryFlags DetectCompression(string compression)
-        {
-            switch (compression.ToLower())
-            {
-                case "gzip":
-                    return PakEntryFlags.GZip;
-                case "deflate":
-                    return PakEntryFlags.Deflate;
-                default:
-                    return PakEntryFlags.None;
-            }
         }
 
         private static FileStream OpenStream(string path, FileMode mode, FileAccess access)
@@ -411,7 +319,7 @@ namespace DarkTech.PakUtil
             return null;
         }
 
-        private static List<PakEntry> ReadEntries(FileStream inputStream)
+        private static IList<PakEntry> ReadEntries(FileStream inputStream)
         {
             try
             {

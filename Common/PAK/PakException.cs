@@ -1,11 +1,11 @@
-﻿using DarkTech.Common.IO;
+﻿using System;
 
 namespace DarkTech.Common.PAK
 {
     /// <summary>
     /// Represents errors that occur during package loading.
     /// </summary>
-    public sealed class PakException : StreamException
+    public sealed class PakException : Exception
     {
         /// <summary>
         /// Represents a <see cref="PakException"/> that occurs when a duplicate package entry is detected.

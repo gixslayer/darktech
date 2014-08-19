@@ -2,7 +2,7 @@
 
 namespace DarkTech.Engine.Sound.Mixing
 {
-    public sealed class SamplePlayer : ISampleProvider
+    public sealed class SamplePlayer : SampleProvider
     {
         public delegate Sample InterpolateDelegate(ref Sample a, ref Sample b, float f);
 
@@ -15,8 +15,6 @@ namespace DarkTech.Engine.Sound.Mixing
         private float rightGain;
         private float index;
 
-        public ISampleConsumer Output { get; set; }
-        public SamplePlayerState State { get; private set; }
         public float Pitch { get; set; }
         public bool Loop { get; set; }
         public float Gain
@@ -48,7 +46,7 @@ namespace DarkTech.Engine.Sound.Mixing
             this.balance = soundDefinition.Balance;
             this.gain = soundDefinition.Gain;
             this.index = 0f;
-            this.State = SamplePlayerState.Playing;
+            this.State = SampleProviderState.Playing;
             this.Pitch = soundDefinition.Pitch;
             this.Loop = soundDefinition.Loop;
 
@@ -56,53 +54,8 @@ namespace DarkTech.Engine.Sound.Mixing
             ComputeGain();
         }
 
-        public void Play()
+        protected Sample NextSample()
         {
-            State = SamplePlayerState.Playing;
-        }
-
-        public void Pause()
-        {
-            State = SamplePlayerState.Paused;
-        }
-
-        public void Stop()
-        {
-            State = SamplePlayerState.Stopped;
-            
-            // Also reset the current index.
-            index = 0f;
-        }
-
-        public void Retrigger()
-        {
-            // Set the index back to the start, effectively stopping and starting the player.
-            index = 0f;
-        }
-
-        public void Process()
-        {
-            // Don't process anything if not in playing state.
-            if (State != SamplePlayerState.Playing)
-            {
-                return;
-            }
-
-            if (index >= source.SampleCount)
-            {
-                // If the current index is outside of the source data and the sample player is set to loop then wrap around the source data.
-                if (Loop)
-                {
-                    index %= source.SampleCount;
-                }
-                else // Else the end of the source data is reached.
-                {
-                    State = SamplePlayerState.Stopped;
-
-                    return;
-                }
-            }
-
             // Compute the integer and fraction components.
             int intIndex = (int)index;
             float fraction = index - intIndex;
@@ -130,11 +83,23 @@ namespace DarkTech.Engine.Sound.Mixing
             outputSample.left *= leftGain;
             outputSample.right *= rightGain;
 
-            // Send the sample to the output.
-            Output.Process(ref outputSample);
-
             // Update the index according to the pitch.
             index += Pitch;
+
+            if (index >= source.SampleCount)
+            {
+                // If the current index is outside of the source data and the sample player is set to loop then wrap around the source data.
+                if (Loop)
+                {
+                    index %= source.SampleCount;
+                }
+                else // Else the end of the source data is reached.
+                {
+                    State = SampleProviderState.Stopped;
+                }
+            }
+
+            return outputSample;
         }
 
         private void ComputeGain()

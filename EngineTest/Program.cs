@@ -7,44 +7,103 @@ using DarkTech.Common.Containers;
 
 //using DarkTech.Common.Math.Noise;
 using DarkTech.DarkAL;
-using DarkTech.Engine;
+//using DarkTech.Engine;
+using DarkTech.DarkGL;
+
+using DarkTech.WindowLib;
 
 namespace EngineTest
 {
     class Program
     {
+        static bool pumpevents = true;
+        static Window window;
+        static Context context;
+
         static void Main(string[] args)
         {
             //TestProfiler();
 
             Console.WriteLine("pre start");
 
-            EngineConfiguration config = new EngineConfiguration();
+           /* EngineConfiguration config = new EngineConfiguration();
             config.NetModel = NetModel.Local;
             config.RootDirectory = @"D:\Programming\C#\DarkTech\EngineTest\bin\Debug";
             config.ClientDLL = "TestClient.dll";
-            config.ServerDLL = "TestServer.dll";
+            config.ServerDLL = "TestServer.dll";*/
 
            // Console.WriteLine(Engine.Start(config));
 
-            Console.WriteLine("post start");
+            WindowConfiguration config = new WindowConfiguration();
 
-            IMap<int, int> map = new BSTMap<int, int>();
+            config.ClassName = "TESTCLASS";
+            config.Height = 768;
+            config.Width = 1024;
+            config.X = 0;
+            config.Y = 0;
+            config.Title = "Test Window";
+            config.Mode = WindowMode.Windowed;
 
-            map.Add(5, 5);
-            map.Add(0, 0);
-            map.Add(7, 7);
-            map.Add(3, 3);
-            map.Add(4, 4);
-            map.Add(1, 1);
+            IntPtr hInstance = System.Diagnostics.Process.GetCurrentProcess().Handle;
 
-            foreach(KeyValuePair<int, int> pair in map) 
+            window = Window.CreateWindow(hInstance, config);
+
+            window.Created += window_Created;
+            window.Destroyed += window_Destroyed;
+            window.Moved += window_Moved;
+            window.Resized += window_Resized;
+            window.Destroying += window_Destroying;
+            window.KeyUp += window_KeyUp;
+            window.KeyDown += window_KeyDown;
+            window.KeyPressed += window_KeyPressed;
+        //    window.MouseWheelMoved += window_MouseWheelMoved;
+         //   window.MouseDown += window_MouseDown;
+         //   window.MouseUp += window_MouseUp;
+          //  window.MouseMoved += window_MouseMoved;
+
+            window.Create();
+            window.Show();
+            window.RegisterInputDevice();
+
+            Console.WriteLine("Creating GL context");
+
+            try
             {
-                Console.WriteLine("{0}: {1}", pair.Key, pair.Value);
+                context = Context.CreateContext(window.Handle);
+
+                int[] result = new int[1];
+                gl.GetIntegerv(GL.MAJOR_VERSION, result);
+                Console.WriteLine("OpenGL Major = {0}", result[0]);
+                gl.GetIntegerv(GL.MINOR_VERSION, result);
+                Console.WriteLine("OpenGL Minor = {0}", result[0]);
             }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed: {0}", e.Message);
+            }
+
+            gl.ClearColor(1f, 0f, 0f, 0f);
+            wgl.SwapInterval(1); // vsync
+
+            while (pumpevents)
+            {
+                window.ProcessEvents();
+
+                gl.Clear(GL.COLOR_BUFFER_BIT);
+
+                context.SwapBuffers();
+
+                System.Threading.Thread.Sleep(33);
+            }
+
+            window.Destroy();
+            context.Dispose();
+
+            Console.WriteLine("post start");
 
             Console.Read();
 
+            #region Hide
             //Render(0x1337243, 32, 1024, 128, "out.jpg");
             //Render(0x1337242, 128, 1024, 128, "out2.jpg");
 
@@ -132,8 +191,79 @@ namespace EngineTest
 
             //Console.WriteLine("DONE");
             //Console.Read();
+            #endregion
         }
 
+        static void window_MouseMoved(int x, int y)
+        {
+            Console.WriteLine("Mouse moved: {0},{1}", x, y);
+        }
+
+        static void window_MouseUp(int mouseButton)
+        {
+            Console.WriteLine("Mouse up: {0}", mouseButton);
+        }
+
+        static void window_MouseDown(int mouseButton)
+        {
+            Console.WriteLine("Mouse down: {0}", mouseButton);
+        }
+
+        static void window_MouseWheelMoved(int delta)
+        {
+            Console.WriteLine("Mouse wheel: {0}", delta);
+        }
+
+        static void window_KeyPressed(int keyCode)
+        {
+            Console.WriteLine("Pressed: {0}", keyCode);
+        }
+
+        static void window_KeyDown(int keyCode)
+        {
+            Console.WriteLine("Key down: {0}", keyCode);
+        }
+
+        static void window_KeyUp(int keyCode)
+        {
+            Console.WriteLine("Key up: {0}", keyCode);
+
+            // ESCAPE
+            if (keyCode == 27)
+            {
+                window.Destroy();
+            }
+        }
+
+        static void window_Destroying()
+        {
+            Console.WriteLine("Destroying");
+        }
+
+        static void window_Resized(int width, int height)
+        {
+            Console.WriteLine("Resized: {0}x{1}", width, height);
+        }
+
+        static void window_Moved(int x, int y)
+        {
+            Console.WriteLine("Moved: {0},{1}", x, y);
+        }
+
+        static void window_Destroyed()
+        {
+            Console.WriteLine("Destroyed");
+
+            pumpevents = false;
+        }
+
+        static void window_Created()
+        {
+            Console.WriteLine("Created");
+        }
+
+        #region Hide
+        
         /*static void Render(int seed, int sampleSize, int width, int height, string dest)
         {
             Bitmap bmp = new Bitmap(width, height);
@@ -289,5 +419,6 @@ namespace EngineTest
 
             return Color.FromArgb(255, r, g, b);
         }
+        #endregion
     }
 }

@@ -57,9 +57,13 @@
       <Project>{805435bd-3832-4476-a304-4098450d4ed9}</Project>
       <Name>DarkAL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Engine\Engine.csproj">
-      <Project>{58456d6e-2b42-4e36-9367-2b08b21b3b24}</Project>
-      <Name>Engine</Name>
+    <ProjectReference Include="..\DarkGL\DarkGL.csproj">
+      <Project>{dd7fa289-5fc7-492d-83e9-50b45f9c4064}</Project>
+      <Name>DarkGL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WindowLib\WindowLib.csproj">
+      <Project>{154a2a94-9ab0-4d65-8b95-cc7d20e49993}</Project>
+      <Name>WindowLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

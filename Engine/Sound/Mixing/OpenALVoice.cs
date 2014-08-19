@@ -37,7 +37,7 @@ namespace DarkTech.Engine.Sound.Mixing
 
         public void Process(ref Sample sample)
         {
-            sampleBuffer.Process(ref sample);
+            sampleBuffer.Add(ref sample);
 
             if (sampleBuffer.Count == bufferSize)
             {

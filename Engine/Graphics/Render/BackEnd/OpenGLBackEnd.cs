@@ -22,7 +22,7 @@ namespace DarkTech.Engine.Graphics.Render.BackEnd
 
         public bool CreateContext()
         {
-            ContextSetting setting = ContextSetting.DEFAULT;
+            ContextSettings setting = ContextSettings.DEFAULT;
             //setting.MajorVersion = 3;
             //setting.MinorVersion = 2;
             this.context = Context.CreateContext(Engine.Window.Handle, setting);
