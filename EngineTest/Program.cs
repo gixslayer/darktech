@@ -82,18 +82,30 @@ namespace EngineTest
                 Console.WriteLine("Failed: {0}", e.Message);
             }
 
-            gl.ClearColor(1f, 0f, 0f, 0f);
-            wgl.SwapInterval(1); // vsync
+            gl.ClearColor(1f, 1f, 0.2f, 0f);
+            wgl.SwapInterval(0); // vsync
+
+            float r, g, b;
+            r = g = b = 0f;
 
             while (pumpevents)
             {
                 window.ProcessEvents();
 
+                r += 0.01f;
+                g += 0.002f;
+                b += 0.004f;
+
+                r = r - (int)r;
+                g = g - (int)g;
+                b = b - (int)b;
+
                 gl.Clear(GL.COLOR_BUFFER_BIT);
+                gl.ClearColor(r, g, b, 0f);
 
                 context.SwapBuffers();
 
-                System.Threading.Thread.Sleep(33);
+                //System.Threading.Thread.Sleep(33);
             }
 
             window.Destroy();

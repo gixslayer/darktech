@@ -162,6 +162,11 @@ namespace DarkTech.Common.Math
             return (int)value;
         }
 
+        public static int Ceiling(float value)
+        {
+            return Fract(value) > 0.0f ? (int)value + 1 : (int)value;
+        }
+
         public static float Fract(float value)
         {
             return value - Floor(value);

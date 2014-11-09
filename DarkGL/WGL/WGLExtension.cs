@@ -1,14 +1,27 @@
 ﻿using System;
 using System.Reflection;
+//using System.Runtime.InteropServices;
 
 namespace DarkTech.DarkGL
 {
     public static class WGLExtension
     {
+        //private delegate IntPtr GetExtensionsStringEXT();
+
         static WGLExtension()
         {
+            // FIXME: really dirty, but calling wgl.GetExtensionsStringEXT crashes on Win8, somehow.
+            //IntPtr fnPtr = Loader.provider.GetProcAddress("wgl", "GetExtensionsStringEXT", "");
+            //GetExtensionsStringEXT getExensionsStringEXT = Marshal.GetDelegateForFunctionPointer(fnPtr, typeof(GetExtensionsStringEXT)) as GetExtensionsStringEXT;
+
+            //IntPtr hStr = getExensionsStringEXT();
+            //string extensionsString = Marshal.PtrToStringAnsi(hStr);
+
+            // Manually created a delegate that returns an IntPtr and made a wrapper function that returns a string.
+            string extensionsString = wgl.GetExtensionsStringEXT_W();
+
             // Grab the extensions string. Each extension is separated by a space.
-            string[] extensions = wgl.GetExtensionsStringEXT().ToString().Split(' ');
+            string[] extensions = extensionsString.Split(' '); //wgl.GetExtensionsStringEXT().ToString().Split(' ');
             Type type = typeof(WGLExtension);
 
             foreach (string extension in extensions)

@@ -183,6 +183,14 @@ namespace DarkTech.DarkGL
             else return new StringBuilder();
         }
         
+        [GLEntry("GetExtensionsStringAARB", Category = "ARB")]
+        public static WGLDelegate.GetExtensionsString_W _GetExtensionsString_W = null;
+
+        public static string GetExensionsString_W(IntPtr hdc)
+        {
+            return System.Runtime.InteropServices.Marshal.PtrToStringAnsi(wgl._GetExtensionsString_W(hdc));
+        }
+        
         /// <summary>
         /// <para>Direct call of gl function. If the function is not provided by the GL, the NullReferenceException occurs.</para>
         /// <para>Fullname: GetPbufferDCARB</para>
@@ -448,6 +456,15 @@ namespace DarkTech.DarkGL
             if (wgl._GetExtensionsStringEXT != null) return wgl._GetExtensionsStringEXT();
             else return new StringBuilder();
         }
+
+        [GLEntry("GetExtensionsStringEXT", Category = "EXT")]
+        public static WGLDelegate.GetExtensionsStringEXT_W _GetExtensionsStringEXT_W = null;
+
+        public static string GetExtensionsStringEXT_W()
+        {
+            return System.Runtime.InteropServices.Marshal.PtrToStringAnsi(wgl._GetExtensionsStringEXT_W());
+        }
+
         /// <summary>
         /// <para>Direct call of gl function. If the function is not provided by the GL, the NullReferenceException occurs.</para>
         /// <para>Fullname: GetSwapIntervalEXT</para>

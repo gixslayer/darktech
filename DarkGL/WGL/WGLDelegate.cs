@@ -15,6 +15,7 @@ namespace DarkTech.DarkGL
         public delegate bool DestroyPbuffer(IntPtr hPbuffer);
         public delegate IntPtr GetCurrentReadDC();
         public delegate StringBuilder GetExtensionsString(IntPtr hdc);
+        public delegate IntPtr GetExtensionsString_W(IntPtr hdc);
         public delegate IntPtr GetPbufferDC(IntPtr hPbuffer);
         public delegate bool GetPixelFormatAttribfv(IntPtr hdc, int iPixelFormat, int iLayerPlane, uint nAttributes, int[] piAttributes, float[] pfValues);
         public delegate bool GetPixelFormatAttribiv(IntPtr hdc, int iPixelFormat, int iLayerPlane, uint nAttributes, int[] piAttributes, int[] piValues);
@@ -36,6 +37,7 @@ namespace DarkTech.DarkGL
         // Function DestroyPbufferEXT is alias for DestroyPbufferARB.
         // Function GetCurrentReadDCEXT is alias for GetCurrentReadDCARB.
         public delegate StringBuilder GetExtensionsStringEXT();
+        public delegate IntPtr GetExtensionsStringEXT_W();
         // Function GetPbufferDCEXT is alias for GetPbufferDCARB.
         // Function GetPixelFormatAttribfvEXT is alias for GetPixelFormatAttribfvARB.
         // Function GetPixelFormatAttribivEXT is alias for GetPixelFormatAttribivARB.
