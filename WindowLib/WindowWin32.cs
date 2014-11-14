@@ -290,9 +290,9 @@ namespace DarkTech.WindowLib
 
             RawMouse mouse = input.data.mouse;
 
-            Console.WriteLine("Raw mouse: {0},{1} -> {2}", mouse.lLastX, mouse.lLastY, mouse.usFlags.ToString());
-            Console.WriteLine("button flags: {0}", mouse.usButtonFlags);
-            Console.WriteLine("button data: {0}", (short)mouse.usButtonData);
+            //Console.WriteLine("Raw mouse: {0},{1} -> {2}", mouse.lLastX, mouse.lLastY, mouse.usFlags.ToString());
+            //Console.WriteLine("button flags: {0}", mouse.usButtonFlags);
+            //Console.WriteLine("button data: {0}", (short)mouse.usButtonData);
         }
 
         private static int GetLowWord(IntPtr intPtr)

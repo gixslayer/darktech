@@ -69,6 +69,11 @@
     <Compile Include="Graphics\Windows\WindowWin.cs" />
     <Compile Include="Graphics\Windows\Wm.cs" />
     <Compile Include="Graphics\Windows\WndClass.cs" />
+    <Compile Include="Logging\ConsoleLogWriter.cs" />
+    <Compile Include="Logging\ILogReceiver.cs" />
+    <Compile Include="Logging\LogChannel.cs" />
+    <Compile Include="Logging\LogDispatcher.cs" />
+    <Compile Include="Logging\LogWriter.cs" />
     <Compile Include="NetModel.cs" />
     <Compile Include="Debug\Profiler.cs" />
     <Compile Include="Resources\ResourceCategory.cs" />
@@ -159,6 +164,7 @@
     <Compile Include="Scripting\Arg.cs" />
     <Compile Include="Scripting\ArgType.cs" />
     <Compile Include="Graphics\IWindow.cs" />
+    <Compile Include="Timing\DeltaTimer.cs" />
     <Compile Include="Timing\ITimer.cs" />
     <Compile Include="Timing\TimerWin.cs" />
     <Compile Include="Utils\AssemblyUtils.cs" />

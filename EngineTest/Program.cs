@@ -50,12 +50,12 @@ namespace EngineTest
 
             window.Created += window_Created;
             window.Destroyed += window_Destroyed;
-            window.Moved += window_Moved;
-            window.Resized += window_Resized;
+         //   window.Moved += window_Moved;
+         //   window.Resized += window_Resized;
             window.Destroying += window_Destroying;
             window.KeyUp += window_KeyUp;
-            window.KeyDown += window_KeyDown;
-            window.KeyPressed += window_KeyPressed;
+         //   window.KeyDown += window_KeyDown;
+         //   window.KeyPressed += window_KeyPressed;
         //    window.MouseWheelMoved += window_MouseWheelMoved;
          //   window.MouseDown += window_MouseDown;
          //   window.MouseUp += window_MouseUp;
@@ -83,13 +83,15 @@ namespace EngineTest
             }
 
             gl.ClearColor(1f, 1f, 0.2f, 0f);
-            wgl.SwapInterval(0); // vsync
+            wgl.SwapInterval(1); // vsync
 
             float r, g, b;
             r = g = b = 0f;
 
             while (pumpevents)
             {
+                sw.Start();
+
                 window.ProcessEvents();
 
                 r += 0.01f;
@@ -104,8 +106,6 @@ namespace EngineTest
                 gl.ClearColor(r, g, b, 0f);
 
                 context.SwapBuffers();
-
-                //System.Threading.Thread.Sleep(33);
             }
 
             window.Destroy();

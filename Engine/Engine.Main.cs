@@ -6,6 +6,7 @@ using DarkTech.Engine.Graphics;
 using DarkTech.Engine.Graphics.Render;
 using DarkTech.Engine.Graphics.Render.BackEnd;
 using DarkTech.Engine.Graphics.Render.FrontEnd;
+using DarkTech.Engine.Logging;
 using DarkTech.Engine.Resources;
 using DarkTech.Engine.Scripting;
 using DarkTech.Engine.Sound;
@@ -25,6 +26,7 @@ namespace DarkTech.Engine
         private static RenderQueue renderQueue;
         private static IRenderBackEnd renderBackEnd;
 
+        public static LogDispatcher Log { get; private set; }
         public static IFileSystem FileSystem { get; private set; }
         public static ResourceManager ResourceManager { get; private set; }
         public static ScriptingInterface ScriptingInterface { get; private set; }
@@ -46,13 +48,13 @@ namespace DarkTech.Engine
             Engine.gameThread.Name = "Game";
             Thread.CurrentThread.Name = "Startup/Render";
 
-            // Attach the stdout to the printing system.
-            AttachPrintStream(Console.Out);
+            Log = new LogDispatcher();
+            Log.RegisterReceiver(new ConsoleLogWriter());
 
             // Ensure the current platform is supported.
             if (!Platform.IsSupported())
             {
-                Engine.Error("Unsupported platform");
+                Log.Error("Unsupported platform");
 
                 return false;
             }
@@ -118,8 +120,6 @@ namespace DarkTech.Engine
         {
             // sys - System.            
             ScriptingInterface.RegisterCvarEnum<NetModel>("sys_netModel", "Network model of the engine", CvarFlag.WriteProtected, configuration.NetModel);
-
-            ScriptingInterface.RegisterCvarCallback<NetModel>("sys_netModel", sys_netModelCallback);
 
             // fs - File system.
             ScriptingInterface.RegisterCvarString("fs_root", "Root of the file system", CvarFlag.ReadOnly, configuration.RootDirectory);
@@ -189,13 +189,13 @@ namespace DarkTech.Engine
 
             if (server.Initialize())
             {
-                Engine.Printf("Server DLL {0} - {1} version {2} initialized successfully", server.Name, server.Author, server.Version);
+                Log.Info("Server DLL {0} - {1} version {2} initialized successfully", server.Name, server.Author, server.Version);
 
                 return true;
             }
             else
             {
-                Engine.Error("Server DLL failed to initialize");
+                Log.Error("Server DLL failed to initialize");
 
                 return false;
             }
@@ -215,13 +215,13 @@ namespace DarkTech.Engine
 
             if (client.Initialize())
             {
-                Engine.Printf("Client DLL {0} - {1} version {2} initialized successfully", client.Name, client.Author, client.Version);
+                Log.Info("Client DLL {0} - {1} version {2} initialized successfully", client.Name, client.Author, client.Version);
 
                 return true;
             }
             else
             {
-                Engine.Error("Client DLL failed to initialize");
+                Log.Error("Client DLL failed to initialize");
 
                 return false;
             }
