@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows.Forms;
 
 using DarkTech.Engine.Debug;
+using DarkTech.Common.IO;
 
 namespace ProfilerLogViewer
 {
@@ -48,9 +49,11 @@ namespace ProfilerLogViewer
 
                 using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
                 {
+                    DataStream dataStream = new DataStream(stream);
+
                     while (stream.Position < stream.Length)
                     {
-                        FrameResult result = FrameResult.Deserialize(stream);
+                        FrameResult result = FrameResult.Deserialize(dataStream);
                         frames.Add(result);
 
                         progressCallback((double)stream.Position / (double)stream.Length);
