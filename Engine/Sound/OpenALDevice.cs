@@ -17,7 +17,7 @@ namespace DarkTech.Engine.Sound
 
         public bool Create()
         {
-            Engine.Print("Creating sound device");
+            //Engine.Print("Creating sound device");
 
             // Get the device name, passing null to alcOpenDevice will open the default device.
             string snd_device = Engine.ScriptingInterface.GetCvarValue<string>("snd_device");
@@ -28,20 +28,20 @@ namespace DarkTech.Engine.Sound
 
             if (hDevice == IntPtr.Zero)
             {
-                Engine.Errorf("alcOpenDevice failed for device: {0}", snd_device);
+                //Engine.Errorf("alcOpenDevice failed for device: {0}", snd_device);
 
                 return false;
             }
 
-            Engine.Printf("Using device: {0}", snd_device);
-            Engine.PrintDebugf("Device handle: {0}", hDevice.ToString());
+            //Engine.Printf("Using device: {0}", snd_device);
+            //Engine.PrintDebugf("Device handle: {0}", hDevice.ToString());
 
             // Create a context on the opened device.
             hContext = alc.CreateContext(hDevice, IntPtr.Zero);
 
             if (hContext == IntPtr.Zero)
             {
-                Engine.Error("alcCreateContext failed");
+                //Engine.Error("alcCreateContext failed");
 
                 // Context creation failed, close the device.
                 alc.CloseDevice(hDevice);
@@ -52,12 +52,12 @@ namespace DarkTech.Engine.Sound
                 return false;
             }
 
-            Engine.PrintDebugf("Context handle: {0}", hContext.ToString());
+            //Engine.PrintDebugf("Context handle: {0}", hContext.ToString());
 
             // Make the created context current.
             if (!alc.MakeContextCurrent(hContext))
             {
-                Engine.Error("alcMakeContextCurrent failed");
+                //Engine.Error("alcMakeContextCurrent failed");
 
                 // Failed to make context current, destroy context and close device.
                 alc.DestroyContext(hContext);
@@ -70,14 +70,14 @@ namespace DarkTech.Engine.Sound
                 return false;
             }
 
-            Engine.Print("Sound device created");
+            //Engine.Print("Sound device created");
 
             return true;
         }
 
         public void Destroy()
         {
-            Engine.Print("Destroying sound device");
+            //Engine.Print("Destroying sound device");
 
             // Check if a valid context handle exists.
             if (hContext != IntPtr.Zero)
@@ -88,13 +88,13 @@ namespace DarkTech.Engine.Sound
                     // Destroy the context.
                     alc.DestroyContext(hContext);
 
-                    Engine.PrintDebugf("alcDestroyContext: {0}", hContext.ToString());
+                    //Engine.PrintDebugf("alcDestroyContext: {0}", hContext.ToString());
 
                     hContext = IntPtr.Zero;
                 }
                 else
                 {
-                    Engine.Error("alcMakeContextCurrent(null) failed");
+                    //Engine.Error("alcMakeContextCurrent(null) failed");
                 }
             }
 
@@ -104,13 +104,13 @@ namespace DarkTech.Engine.Sound
                 // Close the device.
                 if (alc.CloseDevice(hDevice))
                 {
-                    Engine.PrintDebugf("alcCloseDevice: {0}", hDevice.ToString());
+                    //Engine.PrintDebugf("alcCloseDevice: {0}", hDevice.ToString());
 
                     hDevice = IntPtr.Zero;
                 }
                 else
                 {
-                    Engine.Error("alcCloseDevice failed");
+                    //Engine.Error("alcCloseDevice failed");
                 }
             }
         }

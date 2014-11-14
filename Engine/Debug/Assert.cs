@@ -8,7 +8,7 @@ namespace DarkTech.Engine.Debug
         [Conditional("DEBUG")]
         public static void Fail(string message = "")
         {
-            Engine.Errorf("Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
 
             FailInternal();
         }
@@ -18,9 +18,9 @@ namespace DarkTech.Engine.Debug
         {
             if (condition) return;
 
-            Engine.Errorf("Assert failed: {0}", message);
-            Engine.Errorf("Expected: {0}", true);
-            Engine.Errorf("Actual: {0}", condition);
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "Expected: {0}", true);
+            Engine.Log.WriteLine("debug/assert", "Actual: {0}", condition);
 
             FailInternal();
         }
@@ -30,9 +30,9 @@ namespace DarkTech.Engine.Debug
         {
             if (!condition) return;
 
-            Engine.Errorf("Assert failed: {0}", message);
-            Engine.Errorf("Expected: {0}", false);
-            Engine.Errorf("Actual: {0}", condition);
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "Expected: {0}", false);
+            Engine.Log.WriteLine("debug/assert", "Actual: {0}", condition);
 
             FailInternal();
         }
@@ -42,8 +42,8 @@ namespace DarkTech.Engine.Debug
         {
             if (obj == null) return;
 
-            Engine.Errorf("Assert failed: {0}", message);
-            Engine.Error("obj != null");
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "obj != null");
 
             FailInternal();
         }
@@ -53,8 +53,8 @@ namespace DarkTech.Engine.Debug
         {
             if (obj != null) return;
 
-            Engine.Errorf("Assert failed: {0}", message);
-            Engine.Error("obj == null");
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "obj == null");
 
             FailInternal();
         }
@@ -64,8 +64,8 @@ namespace DarkTech.Engine.Debug
         {
             if (object.ReferenceEquals(expected, actual)) return;
 
-            Engine.Errorf("Assert failed: {0}", message);
-            Engine.Error("expected != actual");
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "expected != actual");
 
             FailInternal();
         }
@@ -75,8 +75,8 @@ namespace DarkTech.Engine.Debug
         {
             if (!object.ReferenceEquals(expected, actual)) return;
 
-            Engine.Errorf("Assert failed: {0}", message);
-            Engine.Error("expected == actual");
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "expected == actual");
 
             FailInternal();
         }
@@ -89,9 +89,9 @@ namespace DarkTech.Engine.Debug
                 if (expected.CompareTo(actual) == 0) return;
             }
 
-            Engine.Errorf("Assert failed: {0}", message);
-            Engine.Errorf("Expected: {0}", expected);
-            Engine.Errorf("Actual: {0}", actual);
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "Expected: {0}", expected);
+            Engine.Log.WriteLine("debug/assert", "Actual: {0}", actual);
 
             FailInternal();
         }
@@ -105,9 +105,9 @@ namespace DarkTech.Engine.Debug
                 if (expected.CompareTo(actual) > 0) return;
             }
 
-            Engine.Errorf("Assert failed: {0}", message);
-            Engine.Errorf("Expected: < {0}", expected);
-            Engine.Errorf("Actual: {0}", actual);
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "Expected: < {0}", expected);
+            Engine.Log.WriteLine("debug/assert", "Actual: {0}", actual);
 
             FailInternal();
         }
@@ -121,9 +121,9 @@ namespace DarkTech.Engine.Debug
                 if (expected.CompareTo(actual) >= 0) return;
             }
 
-            Engine.Errorf("Assert failed: {0}", message);
-            Engine.Errorf("Expected: <= {0}", expected);
-            Engine.Errorf("Actual: {0}", actual);
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "Expected: <= {0}", expected);
+            Engine.Log.WriteLine("debug/assert", "Actual: {0}", actual);
 
             FailInternal();
         }
@@ -137,9 +137,9 @@ namespace DarkTech.Engine.Debug
                 if (expected.CompareTo(actual) < 0) return;
             }
 
-            Engine.Errorf("Assert failed: {0}", message);
-            Engine.Errorf("Expected: > {0}", expected);
-            Engine.Errorf("Actual: {0}", actual);
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "Expected: > {0}", expected);
+            Engine.Log.WriteLine("debug/assert", "Actual: {0}", actual);
 
             FailInternal();
         }
@@ -153,9 +153,9 @@ namespace DarkTech.Engine.Debug
                 if (expected.CompareTo(actual) <= 0) return;
             }
 
-            Engine.Errorf("Assert failed: {0}", message);
-            Engine.Errorf("Expected: >= {0}", expected);
-            Engine.Errorf("Actual: {0}", actual);
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "Expected: >= {0}", expected);
+            Engine.Log.WriteLine("debug/assert", "Actual: {0}", actual);
 
             FailInternal();
         }
@@ -165,10 +165,10 @@ namespace DarkTech.Engine.Debug
         {
             if (DarkTech.Common.Math.MathHelper.Abs(expected - actual) <= margin) return;
 
-            Engine.Errorf("Assert failed: {0}", message);
-            Engine.Errorf("Expected: {0}", expected);
-            Engine.Errorf("Actual: {0}", actual);
-            Engine.Errorf("Margin: {0}", margin);
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "Expected: {0}", expected);
+            Engine.Log.WriteLine("debug/assert", "Actual: {0}", actual);
+            Engine.Log.WriteLine("debug/assert", "Margin: {0}", margin);
 
             FailInternal();
         }
@@ -178,10 +178,10 @@ namespace DarkTech.Engine.Debug
         {
             if (DarkTech.Common.Math.MathHelper.Abs(expected - actual) <= margin) return;
 
-            Engine.Errorf("Assert failed: {0}", message);
-            Engine.Errorf("Expected: {0}", expected);
-            Engine.Errorf("Actual: {0}", actual);
-            Engine.Errorf("Margin: {0}", margin);
+            Engine.Log.WriteLine("debug/assert", "Assert failed: {0}", message);
+            Engine.Log.WriteLine("debug/assert", "Expected: {0}", expected);
+            Engine.Log.WriteLine("debug/assert", "Actual: {0}", actual);
+            Engine.Log.WriteLine("debug/assert", "Margin: {0}", margin);
 
             FailInternal();
         }

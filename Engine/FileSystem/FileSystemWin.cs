@@ -34,7 +34,7 @@ namespace DarkTech.Engine.FileSystem
             }
             catch (Exception e)
             {
-                Engine.Errorf("Failed to create directory {0} > {1}", path, e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to create directory {0} > {1}", path, e.Message);
             }
         }
 
@@ -46,7 +46,7 @@ namespace DarkTech.Engine.FileSystem
             }
             catch (Exception e)
             {
-                Engine.Errorf("Failed to delete directory {0} > {1}", path, e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to delete directory {0} > {1}", path, e.Message);
             }
         }
 
@@ -61,7 +61,7 @@ namespace DarkTech.Engine.FileSystem
             }
             catch (Exception e)
             {
-                Engine.Errorf("Failed to get files in directory {0} > {1}", path, e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to get files in directory {0} > {1}", path, e.Message);
 
                 return ARRAY_EMPTY;
             }
@@ -81,7 +81,7 @@ namespace DarkTech.Engine.FileSystem
             }
             catch (Exception e)
             {
-                Engine.Errorf("Failed to get files in directory {0} > {1}", path, e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to get files in directory {0} > {1}", path, e.Message);
 
                 return ARRAY_EMPTY;
             }
@@ -109,7 +109,7 @@ namespace DarkTech.Engine.FileSystem
             }
             catch (Exception e)
             {
-                Engine.Errorf("Failed to get directories in directory {0} > {1}", path, e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to get directories in directory {0} > {1}", path, e.Message);
 
                 return ARRAY_EMPTY;
             }
@@ -129,7 +129,7 @@ namespace DarkTech.Engine.FileSystem
             }
             catch (Exception e)
             {
-                Engine.Errorf("Failed to get directories in directory {0} > {1}", path, e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to get directories in directory {0} > {1}", path, e.Message);
 
                 return ARRAY_EMPTY;
             }
@@ -159,7 +159,7 @@ namespace DarkTech.Engine.FileSystem
             }
             catch (Exception e)
             {
-                Engine.Errorf("Failed to delete file {0} > {1}", path, e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to delete file {0} > {1}", path, e.Message);
             }
         }
 
@@ -174,7 +174,7 @@ namespace DarkTech.Engine.FileSystem
             }
             catch (Exception e)
             {
-                Engine.Errorf("Failed to get file info of {0} > {1}", path, e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to get file info of {0} > {1}", path, e.Message);
 
                 return null;
             }
@@ -182,7 +182,7 @@ namespace DarkTech.Engine.FileSystem
             // Make sure the file exists.
             if (!fileInfo.Exists)
             {
-                Engine.Errorf("Could not find file {0}", path);
+                Engine.Log.WriteLine("error/system/filesystem", "Could not find file {0}", path);
 
                 return null;
             }
@@ -228,7 +228,7 @@ namespace DarkTech.Engine.FileSystem
             }
             catch (Exception e)
             {
-                Engine.Errorf("Failed to open file {0} > {1}", path, e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to open file {0} > {1}", path, e.Message);
 
                 return false;
             }
@@ -313,14 +313,14 @@ namespace DarkTech.Engine.FileSystem
         {
             if (mode == FileMode.Append && access != FileAccess.Write)
             {
-                Engine.Errorf("Invalid access flags on FileMode.Append, only write access is allowed");
+                Engine.Log.WriteLine("error/system/filesystem", "Invalid access flags on FileMode.Append, only write access is allowed");
 
                 return false;
             }
 
             if (mode == FileMode.Create && !access.HasFlag(FileAccess.Write))
             {
-                Engine.Errorf("Missing write access on FileMode.Create");
+                Engine.Log.WriteLine("error/system/filesystem", "Missing write access on FileMode.Create");
 
                 return false;
             }

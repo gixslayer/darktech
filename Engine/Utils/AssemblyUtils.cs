@@ -12,7 +12,7 @@ namespace DarkTech.Engine.Utils
         {
             if (!Engine.FileSystem.FileExists(path))
             {
-                Engine.Errorf("Could not find assembly {0}", path);
+                Engine.Log.WriteLine("error/system", "Could not find assembly {0}", path);
 
                 return null;
             }
@@ -33,7 +33,7 @@ namespace DarkTech.Engine.Utils
             }
             catch (BadImageFormatException)
             {
-                Engine.Errorf("Failed to load assembly {0} -> Bad image format", path);
+                Engine.Log.WriteLine("error/system", "Failed to load assembly {0} -> Bad image format", path);
 
                 return null;
             }
@@ -75,11 +75,11 @@ namespace DarkTech.Engine.Utils
                 }
                 catch (Exception e)
                 {
-                    Engine.Errorf("Failed to create instance of type {0} in assembly {1} -> {2}", target.Name, path, e.Message);
+                    Engine.Log.WriteLine("error/system", "Failed to create instance of type {0} in assembly {1} -> {2}", target.Name, path, e.Message);
                 }
             }
 
-            Engine.Errorf("Failed to create instance of type {0} in assembly {1} -> No suitable type found", target.Name, path);
+            Engine.Log.WriteLine("error/system", "Failed to create instance of type {0} in assembly {1} -> No suitable type found", target.Name, path);
 
             return false;
         }
@@ -110,7 +110,7 @@ namespace DarkTech.Engine.Utils
                 }
                 catch (Exception e)
                 {
-                    Engine.Errorf("Failed to create instance of type {0} in assembly {1} -> {2}", target.Name, path, e.Message);
+                    Engine.Log.WriteLine("error/system", "Failed to create instance of type {0} in assembly {1} -> {2}", target.Name, path, e.Message);
                 }
             }
 
@@ -142,7 +142,7 @@ namespace DarkTech.Engine.Utils
                 }
                 catch (Exception e)
                 {
-                    Engine.Error(e.Message);
+                    Engine.Log.WriteLine("error/system", e.Message);
                 }
 
             }

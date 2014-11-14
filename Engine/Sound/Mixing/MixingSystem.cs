@@ -62,7 +62,7 @@ namespace DarkTech.Engine.Sound.Mixing
                     break;
 
                 default:
-                    Engine.Errorf("Unknown sound command {0} (command dropped)", command.Type.ToString());
+                    //Engine.Errorf("Unknown sound command {0} (command dropped)", command.Type.ToString());
                     break;
             }
         }

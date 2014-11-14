@@ -45,7 +45,7 @@ namespace DarkTech.Engine.Scripting
         {
             if (HasFlag(CvarFlag.WriteProtected))
             {
-                Engine.Errorf("Cvar {0} is write protected", Name);
+                Engine.Log.WriteLine("error/system", "Cvar {0} is write protected", Name);
 
                 return;
             }
@@ -54,14 +54,14 @@ namespace DarkTech.Engine.Scripting
 
             if (!TryParse(args, out result))
             {
-                Engine.Errorf("Could not parse value {0} for cvar {1}", value, Name);
+                Engine.Log.WriteLine("error/system", "Could not parse value {0} for cvar {1}", value, Name);
 
                 return;
             }
 
             if (!IsValidValue(result))
             {
-                Engine.Errorf("Value {0} is not valid for cvar {1}", value, Name);
+                Engine.Log.WriteLine("error/system", "Value {0} is not valid for cvar {1}", value, Name);
 
                 return;
             }
@@ -82,14 +82,14 @@ namespace DarkTech.Engine.Scripting
         {
             if (HasFlag(CvarFlag.ReadOnly))
             {
-                Engine.Errorf("Cvar {0} is read only", Name);
+                Engine.Log.WriteLine("error/system", "Cvar {0} is read only", Name);
 
                 return;
             }
 
             if (HasFlag(CvarFlag.CheatProtected) && !Engine.CheatsEnabled)
             {
-                Engine.Errorf("Cvar {0} is cheat protected", Name);
+                Engine.Log.WriteLine("error/system", "Cvar {0} is cheat protected", Name);
 
                 return;
             }

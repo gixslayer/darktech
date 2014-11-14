@@ -30,6 +30,7 @@ namespace DarkTech.Engine
         public static ISoundSystem SoundSystem { get; private set; }
         public static Window Window { get; private set; }
         public static IRenderer Renderer { get; private set; }
+        public static ITimer Timer { get; private set; }
         public static bool ShutdownRequested { get { return shutdownRequested; } }
         public static bool CheatsEnabled { get { return sv_cheats; } }
         public static EngineModel Model { get { return sys_model.Value; } }
@@ -52,7 +53,10 @@ namespace DarkTech.Engine
                 return false;
             }
 
-            if (!Initialize(configuration)) return false;
+            if (!Initialize(configuration))
+            {
+                return false;
+            }
 
             Run();
             Shutdown();
@@ -84,6 +88,14 @@ namespace DarkTech.Engine
             SoundSystem = SystemFactory.CreateSoundSystem();
             Window = SystemFactory.CreateWindow();
             Renderer = SystemFactory.CreateRenderer();
+            Timer = SystemFactory.CreateTimer();
+
+            if (!Timer.Initialize())
+            {
+                Log.WriteLine("error/system/startup", "Failed to initialize timer");
+
+                return false;
+            }
 
             if (HasServer)
             {
@@ -276,20 +288,13 @@ namespace DarkTech.Engine
 
         private static void GameLoop()
         {
-            ITimer timer = Platform.CreateTimer();
-
-            if (!timer.Initialize())
-            {
-                Engine.FatalError("Failed to initialize timer for game loop");
-            }
-
             float tsClient = 1.0f / ScriptingInterface.GetCvarValue<int>("cl_fps");
             float tsServer = 1.0f / ScriptingInterface.GetCvarValue<int>("sv_fps");
             float tsDebug = 1.0f;
 
-            clientTimer = new DeltaTimer(timer, tsClient);
-            serverTimer = new DeltaTimer(timer, tsServer);
-            debugTimer = new DeltaTimer(timer, tsDebug);
+            clientTimer = new DeltaTimer(Timer, tsClient);
+            serverTimer = new DeltaTimer(Timer, tsServer);
+            debugTimer = new DeltaTimer(Timer, tsDebug);
 
             while (!shutdownRequested)
             {
@@ -305,8 +310,6 @@ namespace DarkTech.Engine
 
                 DebugFrame();
             }
-
-            timer.Dispose();
         }
 
         private static void ServerFrame()
@@ -374,6 +377,8 @@ namespace DarkTech.Engine
 
             // Dispose the window which should also force it to close.
             Window.Destroy();
+
+            Timer.Dispose();
 
             hasShutdown = true;
         }

@@ -30,7 +30,7 @@ namespace DarkTech.Engine.Scripting
 
             if (IsAliasRegistered(name))
             {
-                Engine.Warningf("Duplicate alias registration for alias {0}", name);
+                Engine.Log.WriteLine("warning/system", "Duplicate alias registration for alias {0}", name);
                 UnregisterAlias(name);
             }
 
@@ -61,7 +61,7 @@ namespace DarkTech.Engine.Scripting
 
             if (IsCommandRegistered(name))
             {
-                Engine.Warningf("Duplicate command registration for command {0}", name);
+                Engine.Log.WriteLine("warning/system", "Duplicate command registration for command {0}", name);
                 UnregisterCommand(name);
             }
 
@@ -163,7 +163,7 @@ namespace DarkTech.Engine.Scripting
 
             if (IsCvarRegistered(cvar.Name))
             {
-                Engine.Warningf("Duplicate cvar registration for cvar {0}", cvar.Name);
+                Engine.Log.WriteLine("warning/system", "Duplicate cvar registration for cvar {0}", cvar.Name);
                 UnregisterCvar(cvar.Name);
             }
 
@@ -239,7 +239,7 @@ namespace DarkTech.Engine.Scripting
 
             if (args.Count == 0)
             {
-                Engine.Warning("Attempted to execute empty statement");
+                Engine.Log.WriteLine("warning/system", "Attempted to execute empty statement");
 
                 return;
             }
@@ -261,7 +261,7 @@ namespace DarkTech.Engine.Scripting
                 if (args.Count == 0)
                 {
                     // Print cvar value.
-                    Engine.Printf("{0} = {1}", arg, GetCvarValue(arg));
+                    Engine.Log.WriteLine("info/system", "{0} = {1}", arg, GetCvarValue(arg));
                 }
                 else
                 {
@@ -271,7 +271,7 @@ namespace DarkTech.Engine.Scripting
             }
             else
             {
-                Engine.Errorf("Unknown command/cvar {0}", arg);
+                Engine.Log.WriteLine("error/system", "Unknown command/cvar {0}", arg);
             }
         }
 
@@ -293,7 +293,7 @@ namespace DarkTech.Engine.Scripting
 
             if (!IsCommandRegistered(name))
             {
-                Engine.Errorf("Could not find command {0}", name);
+                Engine.Log.WriteLine("error/system", "Could not find command {0}", name);
 
                 return;
             }

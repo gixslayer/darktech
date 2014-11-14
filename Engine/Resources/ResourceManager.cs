@@ -83,7 +83,7 @@ namespace DarkTech.Engine.Resources
 
             if (loadedPaks.ContainsKey(path))
             {
-                Engine.Warningf("Pak {0} is already loaded", path);
+                Engine.Log.WriteLine("warning/system", "Pak {0} is already loaded", path);
 
                 return true;
             }
@@ -100,7 +100,7 @@ namespace DarkTech.Engine.Resources
             }
             catch (PakException e)
             {
-                Engine.Errorf("Could not open pak file {0} > {1}", path, e.Message);
+                Engine.Log.WriteLine("error/system", "Could not open pak file {0} > {1}", path, e.Message);
 
                 return false;
             }
@@ -208,7 +208,7 @@ namespace DarkTech.Engine.Resources
         {
             if (IsResourceCached(name))
             {
-                Engine.Warningf("Duplicate resource cache for {0}", name);
+                Engine.Log.WriteLine("warning/system", "Duplicate resource cache for {0}", name);
 
                 return true;
             }
@@ -245,14 +245,14 @@ namespace DarkTech.Engine.Resources
 
             if (!HasResource(name))
             {
-                Engine.Errorf("Could not find resource {0}", name);
+                Engine.Log.WriteLine("error/system", "Could not find resource {0}", name);
 
                 return false;
             }
 
             if (!HasResourceLoader<T>())
             {
-                Engine.Errorf("Missing resource loader for type {0}", typeof(T).FullName);
+                Engine.Log.WriteLine("error/system", "Missing resource loader for type {0}", typeof(T).FullName);
 
                 return false;
             }
@@ -274,11 +274,11 @@ namespace DarkTech.Engine.Resources
                 }
                 catch(ResourceLoaderException e) 
                 {
-                    Engine.Errorf("Failed to load resource {0} with loader {1} -> {2}", name, loader.Name, e.Message);
+                    Engine.Log.WriteLine("error/system", "Failed to load resource {0} with loader {1} -> {2}", name, loader.Name, e.Message);
                 }
             }
 
-            Engine.Errorf("Failed to load resource {0} -> No working loader found", name);
+            Engine.Log.WriteLine("error/system", "Failed to load resource {0} -> No working loader found", name);
 
             return false;
         }
@@ -307,7 +307,7 @@ namespace DarkTech.Engine.Resources
 
             if (HasResourceLoader<T>(loader.Name))
             {
-                Engine.Warningf("Duplicate resource loader registration -> {0}", loader.Name);
+                Engine.Log.WriteLine("warning/system", "Duplicate resource loader registration -> {0}", loader.Name);
 
                 return;
             }

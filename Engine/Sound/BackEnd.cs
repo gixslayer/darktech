@@ -91,7 +91,7 @@ namespace DarkTech.Engine.Sound
         #region Sound-thread
         private void SoundThread()
         {
-            Engine.Print("Creating OpenAL sound system");
+            //Engine.Print("Creating OpenAL sound system");
 
             // Attempt to initialize the back-end.
             initialized = InitializeLocal();
@@ -128,7 +128,7 @@ namespace DarkTech.Engine.Sound
 
             if (!timer.Initialize())
             {
-                Engine.Error("Sound system timer failed to initialize");
+                //Engine.Error("Sound system timer failed to initialize");
 
                 return false;
             }
@@ -184,7 +184,7 @@ namespace DarkTech.Engine.Sound
 
         private void Shutdown()
         {
-            Engine.Print("Closing OpenAL sound system");
+            //Engine.Print("Closing OpenAL sound system");
 
             // Destroy sound device.
             device.Destroy();

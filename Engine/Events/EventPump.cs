@@ -75,7 +75,7 @@ namespace DarkTech.Engine.Events
                 // If no event dispatcher processed the event throw out a warning.
                 if (!processed)
                 {
-                    Engine.Warningf("Event {0} was not processed", e.Type);
+                    Engine.Log.WriteLine("warning/system", "Event {0} was not processed", e.Type);
                 }
             }
 
