@@ -51,7 +51,6 @@
     <Compile Include="Graphics\Vsync.cs" />
     <Compile Include="Logging\ConsoleLogWriter.cs" />
     <Compile Include="Logging\ILogReceiver.cs" />
-    <Compile Include="Logging\LogChannel.cs" />
     <Compile Include="Logging\LogDispatcher.cs" />
     <Compile Include="Logging\LogWriter.cs" />
     <Compile Include="EngineModel.cs" />

@@ -4,14 +4,14 @@ namespace DarkTech.Engine.Logging
 {
     public sealed class ConsoleLogWriter : ILogReceiver
     {
-        public bool Initialize(LogChannel rootChannel)
+        public bool Initialize()
         {
             return true;
         }
 
-        public void WriteLine(LogChannel channel, string message)
+        public void WriteLine(string channel, string message)
         {
-            Console.WriteLine("[{0}] {1}", channel.GetFullName(), message);
+            Console.WriteLine("[{0}] {1}", channel, message);
         }
 
         public void Dispose() { }

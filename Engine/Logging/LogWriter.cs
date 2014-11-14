@@ -38,7 +38,7 @@ namespace DarkTech.Engine.Logging
             }
         }
 
-        public bool Initialize(LogChannel rootChannel)
+        public bool Initialize()
         {
             if (!Engine.FileSystem.OpenFile(path, FileMode.Append, FileAccess.Write, out file))
             {
@@ -50,11 +50,11 @@ namespace DarkTech.Engine.Logging
             return true;
         }
 
-        public void WriteLine(LogChannel channel, string message)
+        public void WriteLine(string channel, string message)
         {
             string dateTime = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
 
-            writer.WriteLine("[{0}] {1} {2}", dateTime, channel.GetFullName(), message);
+            writer.WriteLine("[{0}] {1} {2}", dateTime, channel, message);
         }
     }
 }

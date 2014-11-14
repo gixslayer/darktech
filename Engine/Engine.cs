@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-
-using DarkTech.Engine.FileSystem;
+﻿using DarkTech.Engine.FileSystem;
 using DarkTech.Engine.Graphics;
 using DarkTech.Engine.Graphics.Render;
 using DarkTech.Engine.Logging;
@@ -51,7 +48,7 @@ namespace DarkTech.Engine
             // Ensure the current platform is supported.
             if (!Platform.IsSupported())
             {
-                Log.Error("Unsupported platform");
+                Log.WriteLine("error/system/startup", "Unsupported platform");
 
                 return false;
             }
@@ -96,7 +93,7 @@ namespace DarkTech.Engine
             }
             catch (WindowException e)
             {
-                Log.Error("Failed to create window: {0}", e.Message);
+                Log.WriteLine("error/system/startup", "Failed to create window: {0}", e.Message);
                 return false;
             }
 
@@ -124,7 +121,7 @@ namespace DarkTech.Engine
         private static void RegisterSystemCvars(EngineConfiguration configuration)
         {
             // sys - System.            
-            ScriptingInterface.RegisterCvarEnum<EngineModel>("sys_model", "Model of the engine", CvarFlag.WriteProtected, configuration.Model);
+            sys_model = ScriptingInterface.RegisterCvarEnum<EngineModel>("sys_model", "Model of the engine", CvarFlag.WriteProtected, configuration.Model);
 
             // fs - File system.
             ScriptingInterface.RegisterCvarString("fs_root", "Root of the file system", CvarFlag.ReadOnly, configuration.RootDirectory);
@@ -196,13 +193,13 @@ namespace DarkTech.Engine
 
             if (server.Initialize())
             {
-                Log.Info("Server DLL {0} - {1} version {2} initialized successfully", server.Name, server.Author, server.Version);
+                Log.WriteLine("info/system/startup", "Server DLL {0} - {1} version {2} initialized successfully", server.Name, server.Author, server.Version);
 
                 return true;
             }
             else
             {
-                Log.Error("Server DLL failed to initialize");
+                Log.WriteLine("error/system/startup", "Server DLL failed to initialize");
 
                 return false;
             }
@@ -222,13 +219,13 @@ namespace DarkTech.Engine
 
             if (client.Initialize())
             {
-                Log.Info("Client DLL {0} - {1} version {2} initialized successfully", client.Name, client.Author, client.Version);
+                Log.WriteLine("info/system/startup", "Client DLL {0} - {1} version {2} initialized successfully", client.Name, client.Author, client.Version);
 
                 return true;
             }
             else
             {
-                Log.Error("Client DLL failed to initialize");
+                Log.WriteLine("error/system/startup", "Client DLL failed to initialize");
 
                 return false;
             }
@@ -262,7 +259,6 @@ namespace DarkTech.Engine
             float tsServer = 1.0f / ScriptingInterface.GetCvarValue<int>("sv_fps");
             float tsDebug = 1.0f;
 
-            sys_model = Engine.ScriptingInterface.GetCvar<CvarEnum<EngineModel>>("sys_model");
             clientTimer = new DeltaTimer(timer, tsClient);
             serverTimer = new DeltaTimer(timer, tsServer);
             debugTimer = new DeltaTimer(timer, tsDebug);
