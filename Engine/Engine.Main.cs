@@ -20,11 +20,7 @@ namespace DarkTech.Engine
         private static bool hasShutdown;
         private static IClient client;
         private static IServer server;
-        private static Thread gameThread;
         private static CvarBool sv_cheats;
-        private static ManualResetEventSlim shutdownEvent;
-        private static RenderQueue renderQueue;
-        private static IRenderBackEnd renderBackEnd;
 
         public static LogDispatcher Log { get; private set; }
         public static IFileSystem FileSystem { get; private set; }
@@ -32,7 +28,7 @@ namespace DarkTech.Engine
         public static ScriptingInterface ScriptingInterface { get; private set; }
         public static ISoundSystem SoundSystem { get; private set; }
         public static IWindow Window { get; private set; }
-        public static IRenderFrontEnd Renderer { get; private set; }
+        public static IRenderer Renderer { get; private set; }
         public static bool ShutdownRequested { get { return shutdownRequested; } }
         public static bool CheatsEnabled { get { return sv_cheats; } }
 
@@ -43,10 +39,6 @@ namespace DarkTech.Engine
         {
             Engine.shutdownRequested = false;
             Engine.hasShutdown = false;
-            Engine.shutdownEvent = new ManualResetEventSlim(false);
-            Engine.gameThread = new Thread(GameLoop);
-            Engine.gameThread.Name = "Game";
-            Thread.CurrentThread.Name = "Startup/Render";
 
             Log = new LogDispatcher();
             Log.RegisterReceiver(new ConsoleLogWriter());
@@ -72,7 +64,6 @@ namespace DarkTech.Engine
             if (shutdownRequested)
                 return;
 
-            shutdownEvent.Set();
             shutdownRequested = true;
         }
 
@@ -91,13 +82,11 @@ namespace DarkTech.Engine
             ResourceManager = SystemFactory.CreateResourceManager();
             SoundSystem = SystemFactory.CreateSoundSystem();
             Window = SystemFactory.CreateWindow();
-            renderQueue = SystemFactory.CreateRenderQueue();
-            renderBackEnd = SystemFactory.CreateRenderBackEnd(renderQueue);
-            Renderer = SystemFactory.CreateRenderFrontEnd(renderQueue);
+            Renderer = SystemFactory.CreateRenderer();
 
-            // Create window and graphics context.
+            // Create window and initialize the renderer, which creates a graphics context.
             if (!Window.CreateWindow()) return false;
-            if (!renderBackEnd.CreateContext()) return false;
+            if (!Renderer.Initialize()) return false;
 
             // Load server and client.
             if (!LoadServer()) return false;
@@ -169,7 +158,7 @@ namespace DarkTech.Engine
             ScriptingInterface.RegisterCommand("quit", "Closes the engine and returns to the desktop", false, quit);
 
             // r - Renderer.
-            ScriptingInterface.RegisterCommand("r_restart", "Restart the render backend", false, r_restart);
+            ScriptingInterface.RegisterCommand("r_restart", "Restart the renderer", false, r_restart);
 
             // snd - Sound system.
             ScriptingInterface.RegisterCommand("snd_restart", "Restart the sound system", false, snd_restart);
@@ -234,16 +223,10 @@ namespace DarkTech.Engine
             // Start the sound system thread.
             SoundSystem.Start();
 
-            // Start the game thread.
-            gameThread.Start();
-
-            // Show the window and enter the render back-end loop on the current thread.
+            // Show the window and enter the game loop.
             Window.ShowWindow();
-            renderBackEnd.Start();
-
-            // Block the current thread until a shutdown is requested (in case of a server only net model).
-            shutdownEvent.Wait();
-
+            GameLoop();
+            
             // Shut down systems and perform cleanup.
             Shutdown();
         }

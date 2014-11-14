@@ -46,14 +46,9 @@
     <Compile Include="Events\EventMapping.cs" />
     <Compile Include="Events\EventPump.cs" />
     <Compile Include="Events\EventType.cs" />
-    <Compile Include="Graphics\Render\BackEnd\DummyBackEnd.cs" />
     <Compile Include="Graphics\DummyWindow.cs" />
-    <Compile Include="Graphics\Render\BackEnd\IRenderBackEnd.cs" />
-    <Compile Include="Graphics\Render\CommandNOP.cs" />
-    <Compile Include="Graphics\Render\FrontEnd\IRenderFrontEnd.cs" />
-    <Compile Include="Graphics\Render\FrontEnd\RenderFrontEnd.cs" />
-    <Compile Include="Graphics\Render\RenderCommand.cs" />
-    <Compile Include="Graphics\Render\RenderQueue.cs" />
+    <Compile Include="Graphics\Render\IRenderer.cs" />
+    <Compile Include="Graphics\Render\OpenGLRenderer.cs" />
     <Compile Include="Graphics\Vsync.cs" />
     <Compile Include="Graphics\Windows\ClassStyles.cs" />
     <Compile Include="Graphics\Windows\IdcStandardCursors.cs" />
@@ -117,7 +112,6 @@
     <Compile Include="Temp\Event.cs" />
     <Compile Include="Temp\EventDispatcher.cs" />
     <Compile Include="Temp\EventType.cs" />
-    <Compile Include="Graphics\Render\BackEnd\OpenGLBackEnd.cs" />
     <Compile Include="IClient.cs" />
     <Compile Include="IServer.cs" />
     <Compile Include="Network\UDPSocket.cs" />

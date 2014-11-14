@@ -25,19 +25,6 @@ namespace DarkTech.Engine
                 return Platform.CreateWindow();
         }
 
-        public static IRenderBackEnd CreateRenderBackEnd(RenderQueue renderQueue)
-        {
-            if (Engine.ScriptingInterface.GetCvarValue<NetModel>("sys_netModel") == NetModel.ServerOnly)
-                return new DummyBackEnd();
-            else
-                return new OpenGLBackEnd(renderQueue);
-        }
-
-        public static IRenderFrontEnd CreateRenderFrontEnd(RenderQueue renderQueue)
-        {
-            return new RenderFrontEnd(renderQueue);
-        }
-
         public static ResourceManager CreateResourceManager()
         {
             return new ResourceManager();
@@ -48,9 +35,9 @@ namespace DarkTech.Engine
             return new ScriptingInterface();
         }
 
-        public static RenderQueue CreateRenderQueue()
+        public static IRenderer CreateRenderer()
         {
-            return new RenderQueue();
+            return new OpenGLRenderer();
         }
 
         public static ISoundSystem CreateSoundSystem()
