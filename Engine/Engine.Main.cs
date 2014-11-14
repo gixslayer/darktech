@@ -4,13 +4,12 @@ using System.Threading;
 using DarkTech.Engine.FileSystem;
 using DarkTech.Engine.Graphics;
 using DarkTech.Engine.Graphics.Render;
-using DarkTech.Engine.Graphics.Render.BackEnd;
-using DarkTech.Engine.Graphics.Render.FrontEnd;
 using DarkTech.Engine.Logging;
 using DarkTech.Engine.Resources;
 using DarkTech.Engine.Scripting;
 using DarkTech.Engine.Sound;
 using DarkTech.Engine.Utils;
+using DarkTech.WindowLib;
 
 namespace DarkTech.Engine
 {
@@ -27,7 +26,7 @@ namespace DarkTech.Engine
         public static ResourceManager ResourceManager { get; private set; }
         public static ScriptingInterface ScriptingInterface { get; private set; }
         public static ISoundSystem SoundSystem { get; private set; }
-        public static IWindow Window { get; private set; }
+        public static Window Window { get; private set; }
         public static IRenderer Renderer { get; private set; }
         public static bool ShutdownRequested { get { return shutdownRequested; } }
         public static bool CheatsEnabled { get { return sv_cheats; } }
@@ -84,8 +83,19 @@ namespace DarkTech.Engine
             Window = SystemFactory.CreateWindow();
             Renderer = SystemFactory.CreateRenderer();
 
-            // Create window and initialize the renderer, which creates a graphics context.
-            if (!Window.CreateWindow()) return false;
+            // Create the window, but do not show it yet.
+            try
+            {
+                Window.Create();
+            }
+            catch (WindowException e)
+            {
+                Log.Error("Failed to create window: {0}", e.Message);
+                return false;
+            }
+
+            // Initialize the renderer which will create a graphics context that
+            // is required for loading the client.
             if (!Renderer.Initialize()) return false;
 
             // Load server and client.
@@ -127,11 +137,13 @@ namespace DarkTech.Engine
             ScriptingInterface.RegisterCvarEnum<DistanceModel>("snd_distanceModel", "Distance model for positional audio", CvarFlag.None, DistanceModel.Linear);
 
             // w - Window, client should set the appropriate values during initialization.
+            ScriptingInterface.RegisterCvarString("w_className", "Window class name", CvarFlag.ReadOnly, "DarkTech-Engine");
             ScriptingInterface.RegisterCvarString("w_title", "Window title", CvarFlag.None, "DarkTech Engine");
             ScriptingInterface.RegisterCvarInt("w_x", "Window x location", CvarFlag.None, 0, 0, 65536);
             ScriptingInterface.RegisterCvarInt("w_y", "Window y location", CvarFlag.None, 0, 0, 65536);
             ScriptingInterface.RegisterCvarInt("w_width", "Window width", CvarFlag.None, 1280, 1, 65536);
             ScriptingInterface.RegisterCvarInt("w_height", "Window height", CvarFlag.None, 720, 1, 65536);
+            ScriptingInterface.RegisterCvarBool("w_noBorder", "Remove window border", CvarFlag.None, false);
 
             // r - Renderer.
             ScriptingInterface.RegisterCvarEnum<Vsync>("r_vsync", "Vsync mode", CvarFlag.None, Vsync.On);
@@ -224,7 +236,7 @@ namespace DarkTech.Engine
             SoundSystem.Start();
 
             // Show the window and enter the game loop.
-            Window.ShowWindow();
+            Window.Show();
             GameLoop();
             
             // Shut down systems and perform cleanup.
