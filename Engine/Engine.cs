@@ -33,9 +33,8 @@ namespace DarkTech.Engine
         public static bool ShutdownRequested { get { return shutdownRequested; } }
         public static bool CheatsEnabled { get { return sv_cheats; } }
         public static EngineModel Model { get { return sys_model.Value; } }
-
-        public static EventDispatcher EventDispatcher { get; private set; }
-        public static SceneGraph Scene { get; private set; }
+        public static bool HasClient { get { return Model != EngineModel.ServerOnly; } }
+        public static bool HasServer { get { return Model != EngineModel.ClientOnly; } }
 
         public static bool Start(EngineConfiguration configuration)
         {
@@ -86,47 +85,84 @@ namespace DarkTech.Engine
             Window = SystemFactory.CreateWindow();
             Renderer = SystemFactory.CreateRenderer();
 
-            // Create the window, but do not show it yet.
-            try
+            if (HasServer)
             {
-                Window.Create();
-            }
-            catch (WindowException e)
-            {
-                Log.WriteLine("error/system/startup", "Failed to create window: {0}", e.Message);
-                return false;
+                if (!LoadServer())
+                {
+                    return false;
+                }
             }
 
-            // Initialize the renderer which will create a graphics context that
-            // is required for loading the client.
-            if (!Renderer.Initialize()) return false;
+            if (HasClient)
+            {
+                // Create the window, but do not show it yet.
+                try
+                {
+                    Window.Create();
+                }
+                catch (WindowException e)
+                {
+                    Log.WriteLine("error/system/startup", "Failed to create window: {0}", e.Message);
+                    return false;
+                }
 
-            // Load server and client.
-            if (!LoadServer()) return false;
-            if (!LoadClient()) return false;
+                // Initialize the renderer which will create a graphics context that
+                // is required for loading the client.
+                if (!Renderer.Initialize())
+                {
+                    return false;
+                }
 
-            // Initialize sound system.
-            if (!SoundSystem.Initialize()) return false;
+                if (!LoadClient())
+                {
+                    return false;
+                }
+
+                if (!SoundSystem.Initialize())
+                {
+                    return false;
+                }
+            }
 
             return true;
         }
 
         private static void RegisterCvars(EngineConfiguration configuration)
         {
-            RegisterSystemCvars(configuration);
-            RegisterServerCvars();
-            RegisterClientCvars();
+            RegisterSharedCvars(configuration);
+            
+            if (HasServer)
+            {
+                RegisterServerOnlyCvars(configuration);
+            }
+
+            if (HasClient)
+            {
+                RegisterClientOnlyCvars(configuration);
+            }
         }
 
-        private static void RegisterSystemCvars(EngineConfiguration configuration)
+        private static void RegisterSharedCvars(EngineConfiguration configuration)
         {
             // sys - System.            
             sys_model = ScriptingInterface.RegisterCvarEnum<EngineModel>("sys_model", "Model of the engine", CvarFlag.WriteProtected, configuration.Model);
 
             // fs - File system.
             ScriptingInterface.RegisterCvarString("fs_root", "Root of the file system", CvarFlag.ReadOnly, configuration.RootDirectory);
+        }
+
+        private static void RegisterClientOnlyCvars(EngineConfiguration configuration)
+        {
+            // cl - Client.
+            ScriptingInterface.RegisterCvarInt("cl_fps", "Amount of client frames per second", CvarFlag.None, 1000, 1, 1000);
+
+            ScriptingInterface.RegisterCvarCallback<int>("cl_fps", cl_fpsCallback);
+
+            // fs - File system.
             ScriptingInterface.RegisterCvarString("fs_client", "Client DLL location", CvarFlag.ReadOnly, configuration.ClientDLL);
-            ScriptingInterface.RegisterCvarString("fs_server", "Server DLL location", CvarFlag.ReadOnly, configuration.ServerDLL);
+
+            // r - Renderer.
+            ScriptingInterface.RegisterCvarEnum<Vsync>("r_vsync", "Vsync mode", CvarFlag.None, Vsync.On);
 
             // snd - Sound system.
             ScriptingInterface.RegisterCvarString("snd_device", "Name of the sound device to use", CvarFlag.None, "default");
@@ -147,21 +183,14 @@ namespace DarkTech.Engine
             ScriptingInterface.RegisterCvarInt("w_width", "Window width", CvarFlag.None, 1280, 1, 65536);
             ScriptingInterface.RegisterCvarInt("w_height", "Window height", CvarFlag.None, 720, 1, 65536);
             ScriptingInterface.RegisterCvarBool("w_noBorder", "Remove window border", CvarFlag.None, false);
-
-            // r - Renderer.
-            ScriptingInterface.RegisterCvarEnum<Vsync>("r_vsync", "Vsync mode", CvarFlag.None, Vsync.On);
-            ScriptingInterface.RegisterCvarBool("r_restartRequested", "Used by r_restart to request a render backend restart", CvarFlag.WriteProtected, false);
         }
 
-        private static void RegisterClientCvars()
+        private static void RegisterServerOnlyCvars(EngineConfiguration configuration)
         {
-            ScriptingInterface.RegisterCvarInt("cl_fps", "Amount of client frames per second", CvarFlag.None, 1000, 1, 1000);
+            // fs - File system.
+            ScriptingInterface.RegisterCvarString("fs_server", "Server DLL location", CvarFlag.ReadOnly, configuration.ServerDLL);
 
-            ScriptingInterface.RegisterCvarCallback<int>("cl_fps", cl_fpsCallback);
-        }
-
-        private static void RegisterServerCvars()
-        {
+            // sv - Server.
             sv_cheats = ScriptingInterface.RegisterCvarBool("sv_cheats", "Enable cheats", CvarFlag.WriteProtected, false);
             ScriptingInterface.RegisterCvarInt("sv_fps", "Amount of server frames per second", CvarFlag.WriteProtected, 20, 1, 1000);
 
@@ -181,15 +210,12 @@ namespace DarkTech.Engine
 
         private static bool LoadServer()
         {
-            server = new DummyServer();
-
-            if (ScriptingInterface.GetCvarValue<EngineModel>("sys_netModel") == EngineModel.ClientOnly)
-                return true;
-
             string serverPath = ScriptingInterface.GetCvarValue<string>("fs_server");
 
             if (!AssemblyUtils.LoadType<IServer>(serverPath, out server))
+            {
                 return false;
+            }
 
             if (server.Initialize())
             {
@@ -207,15 +233,12 @@ namespace DarkTech.Engine
 
         private static bool LoadClient()
         {
-            client = new DummyClient();
-
-            if (ScriptingInterface.GetCvarValue<EngineModel>("sys_netModel") == EngineModel.ServerOnly)
-                return true;
-
             string clientPath = ScriptingInterface.GetCvarValue<string>("fs_client");
 
             if (!AssemblyUtils.LoadType<IClient>(clientPath, out client))
+            {
                 return false;
+            }
 
             if (client.Initialize())
             {
@@ -235,11 +258,16 @@ namespace DarkTech.Engine
         #region Run
         private static void Run()
         {
-            // Start the sound system thread.
-            SoundSystem.Start();
+            if (HasClient)
+            {
+                // Start the sound system thread.
+                SoundSystem.Start();
 
-            // Show the window and enter the game loop.
-            Window.Show();
+                // Make the window visible.
+                Window.Show();
+            }
+
+            // Enter the game loop. This will block the calling thread until the engine shuts down.
             GameLoop();
             
             // Shut down systems and perform cleanup.
@@ -265,8 +293,16 @@ namespace DarkTech.Engine
 
             while (!shutdownRequested)
             {
-                ServerFrame();
-                ClientFrame();
+                if (HasServer)
+                {
+                    ServerFrame();
+                }
+
+                if (HasClient)
+                {
+                    ClientFrame();
+                }
+
                 DebugFrame();
             }
 
@@ -275,11 +311,6 @@ namespace DarkTech.Engine
 
         private static void ServerFrame()
         {
-            if (sys_model == EngineModel.ClientOnly)
-            {
-                return;
-            }
-
             serverTimer.Update();
 
             // Server receive.
@@ -293,12 +324,8 @@ namespace DarkTech.Engine
 
         private static void ClientFrame()
         {
-            if (sys_model == EngineModel.ServerOnly)
-            {
-                return;
-            }
-
             clientTimer.Update();
+
             Window.ProcessEvents();
 
             while (clientTimer.HasNextFrame)

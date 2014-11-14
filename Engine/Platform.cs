@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 
 using DarkTech.Engine.FileSystem;
 using DarkTech.Engine.Graphics;
-using DarkTech.Engine.Graphics.Windows;
 using DarkTech.Engine.Timing;
 
 namespace DarkTech.Engine
@@ -29,17 +27,6 @@ namespace DarkTech.Engine
                     return new FileSystemWin();
                 default:
                     throw new PlatformNotSupportedException("Could not create IFileSystem implementation for current platform");
-            }
-        }
-
-        public static IWindow CreateWindow()
-        {
-            switch (Environment.OSVersion.Platform)
-            {
-                case PlatformID.Win32NT:
-                    return new WindowWin(Process.GetCurrentProcess().Handle);
-                default:
-                    throw new PlatformNotSupportedException("Could not create IWindow implementation for current platform");
             }
         }
 

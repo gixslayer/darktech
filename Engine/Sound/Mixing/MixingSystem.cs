@@ -69,18 +69,18 @@ namespace DarkTech.Engine.Sound.Mixing
 
         private void PlaySound(CommandPlaySound command)
         {
-            SamplePlayer player = new SamplePlayer(command.SoundDefinition);
+            /*SamplePlayer player = new SamplePlayer(command.SoundDefinition);
             MixerChannel channel = command.MixerChannelIndex == -1 ? mixer.Master : mixer[command.MixerChannelIndex];
 
             player.Output = command.EffectChain;
             command.EffectChain.Output = channel;
 
-            activeProviders.Add(player);
+            activeProviders.Add(player);*/
         }
 
         private void PlaySoundAt(CommandPlaySoundAt command)
         {
-            SamplePlayer player = new SamplePlayer(command.SoundDefinition);
+            /*SamplePlayer player = new SamplePlayer(command.SoundDefinition);
             MixerChannel channel = command.MixerChannelIndex == -1 ? mixer.Master : mixer[command.MixerChannelIndex];
 
             player.Output = command.EffectChain;
@@ -88,12 +88,12 @@ namespace DarkTech.Engine.Sound.Mixing
 
             // Add positional filter after effect chain
 
-            activeProviders.Add(player);
+            activeProviders.Add(player);*/
         }
 
         private void PlaySoundAtEntity(CommandPlaySoundAtEntity command)
         {
-            SamplePlayer player = new SamplePlayer(command.SoundDefinition);
+            /*SamplePlayer player = new SamplePlayer(command.SoundDefinition);
             MixerChannel channel = command.MixerChannelIndex == -1 ? mixer.Master : mixer[command.MixerChannelIndex];
 
             player.Output = command.EffectChain;
@@ -103,7 +103,7 @@ namespace DarkTech.Engine.Sound.Mixing
 
             activeProviders.Add(player);
 
-            // Register trackedActiveSound
+            // Register trackedActiveSound*/
         }
 
         private void UpdateListener(CommandUpdateListener command)

@@ -196,7 +196,7 @@ namespace DarkTech.Engine.Debug
             }
         }
 
-        public void Serialize(Stream stream)
+        public void Serialize(DataStream stream)
         {
             stream.WriteUInt(FrameIndex);
             stream.WriteLong(TotalDuration);
@@ -208,7 +208,7 @@ namespace DarkTech.Engine.Debug
             }
         }
 
-        public static FrameResult Deserialize(Stream stream)
+        public static FrameResult Deserialize(DataStream stream)
         {
             uint frameIndex = stream.ReadUInt();
             long totalDuration = stream.ReadLong();
@@ -256,7 +256,7 @@ namespace DarkTech.Engine.Debug
             this.Children = new List<SectionResult>();
         }
 
-        public void Serialize(Stream stream)
+        public void Serialize(DataStream stream)
         {
             byte[] nameBuffer = Encoding.UTF8.GetBytes(Name);
 
@@ -273,7 +273,7 @@ namespace DarkTech.Engine.Debug
             }
         }
 
-        public static SectionResult Deserialize(Stream stream, SectionResult parent = null)
+        public static SectionResult Deserialize(DataStream stream, SectionResult parent = null)
         {
             int nameLength = stream.ReadUShort();
             byte[] nameBuffer = stream.ReadBytes(nameLength);

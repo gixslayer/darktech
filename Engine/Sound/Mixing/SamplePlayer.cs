@@ -2,7 +2,7 @@
 
 namespace DarkTech.Engine.Sound.Mixing
 {
-    public sealed class SamplePlayer : SampleProvider
+    internal sealed class SamplePlayer : SampleProvider
     {
         public delegate Sample InterpolateDelegate(ref Sample a, ref Sample b, float f);
 
@@ -54,7 +54,7 @@ namespace DarkTech.Engine.Sound.Mixing
             ComputeGain();
         }
 
-        protected Sample NextSample()
+        protected override Sample NextSample()
         {
             // Compute the integer and fraction components.
             int intIndex = (int)index;

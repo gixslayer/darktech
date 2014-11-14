@@ -109,14 +109,14 @@ namespace DarkTech.Engine.Resources
             loadedPaks.Add(path, pakFile);
 
             // Map all entries in the pak file.
-            foreach (string entry in pakFile.EntryNames)
+            foreach (PakEntry entry in pakFile.Entries)
             {
-                if (!pakMapping.ContainsKey(entry))
+                if (!pakMapping.ContainsKey(entry.Name))
                 {
-                    pakMapping.Add(entry, new Stack<PakFile>());
+                    pakMapping.Add(entry.Name, new Stack<PakFile>());
                 }
 
-                pakMapping[entry].Push(pakFile);
+                pakMapping[entry.Name].Push(pakFile);
             }
 
             return true;
@@ -132,12 +132,12 @@ namespace DarkTech.Engine.Resources
             PakFile pakFile = loadedPaks[path];
 
             // Upmap all entries in the pak file.
-            foreach (string entry in pakFile.EntryNames)
+            foreach (PakEntry entry in pakFile.Entries)
             {
-                if (pakMapping[entry].Peek().Equals(pakFile))
+                if (pakMapping[entry.Name].Peek().Equals(pakFile))
                 {
                     // Entry is on top of the stack, simply pop it off.
-                    pakMapping[entry].Pop();
+                    pakMapping[entry.Name].Pop();
                 }
                 else
                 {
@@ -145,7 +145,7 @@ namespace DarkTech.Engine.Resources
                     // Add all entries to a new temporary stack unless it's the entry to remove
                     // then clear the original stack and push every entry in the temp stack back to the original stack.
                     Stack<PakFile> temp = new Stack<PakFile>();
-                    Stack<PakFile> mapping = pakMapping[entry];
+                    Stack<PakFile> mapping = pakMapping[entry.Name];
 
                     while (mapping.Count != 0)
                     {

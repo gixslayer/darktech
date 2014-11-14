@@ -5,7 +5,7 @@ using DarkTech.DarkAL;
 
 namespace DarkTech.Engine.Sound.Mixing
 {
-    public sealed class OpenALVoice : ISampleConsumer
+    public sealed class OpenALVoice //: ISampleConsumer
     {
         private readonly SampleBuffer sampleBuffer;
         private readonly int bufferSize;

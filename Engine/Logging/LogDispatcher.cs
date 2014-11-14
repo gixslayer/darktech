@@ -34,9 +34,9 @@ namespace DarkTech.Engine.Logging
 
         public void RegisterReceiver(ILogReceiver receiver)
         {
-            if (!receiver.Initialize(RootChannel))
+            if (!receiver.Initialize())
             {
-                Error("Failed to initialize log receiver");
+                WriteLine("error/system", "Failed to initialize log receiver");
             }
             else
             {
