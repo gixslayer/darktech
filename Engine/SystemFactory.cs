@@ -52,7 +52,7 @@ namespace DarkTech.Engine
 
         public static ISoundSystem CreateSoundSystem()
         {
-            if (Engine.ScriptingInterface.GetCvarValue<bool>("snd_noSound") || Engine.ScriptingInterface.GetCvarValue<NetModel>("sys_netModel") == NetModel.ServerOnly)
+            if (Engine.ScriptingInterface.GetCvarValue<bool>("snd_noSound") || Engine.ScriptingInterface.GetCvarValue<EngineModel>("sys_netModel") == EngineModel.ServerOnly)
                 return new DummySoundSystem();
             else
                 return new SoundSystem();

@@ -8,6 +8,7 @@ using DarkTech.Engine.Logging;
 using DarkTech.Engine.Resources;
 using DarkTech.Engine.Scripting;
 using DarkTech.Engine.Sound;
+using DarkTech.Engine.Timing;
 using DarkTech.Engine.Utils;
 using DarkTech.WindowLib;
 
@@ -20,6 +21,10 @@ namespace DarkTech.Engine
         private static IClient client;
         private static IServer server;
         private static CvarBool sv_cheats;
+        private static CvarEnum<EngineModel> sys_model;
+        private static DeltaTimer clientTimer;
+        private static DeltaTimer serverTimer;
+        private static DeltaTimer debugTimer;
 
         public static LogDispatcher Log { get; private set; }
         public static IFileSystem FileSystem { get; private set; }
@@ -30,6 +35,7 @@ namespace DarkTech.Engine
         public static IRenderer Renderer { get; private set; }
         public static bool ShutdownRequested { get { return shutdownRequested; } }
         public static bool CheatsEnabled { get { return sv_cheats; } }
+        public static EngineModel Model { get { return sys_model.Value; } }
 
         public static EventDispatcher EventDispatcher { get; private set; }
         public static SceneGraph Scene { get; private set; }
@@ -118,7 +124,7 @@ namespace DarkTech.Engine
         private static void RegisterSystemCvars(EngineConfiguration configuration)
         {
             // sys - System.            
-            ScriptingInterface.RegisterCvarEnum<NetModel>("sys_netModel", "Network model of the engine", CvarFlag.WriteProtected, configuration.NetModel);
+            ScriptingInterface.RegisterCvarEnum<EngineModel>("sys_model", "Model of the engine", CvarFlag.WriteProtected, configuration.Model);
 
             // fs - File system.
             ScriptingInterface.RegisterCvarString("fs_root", "Root of the file system", CvarFlag.ReadOnly, configuration.RootDirectory);
@@ -180,7 +186,7 @@ namespace DarkTech.Engine
         {
             server = new DummyServer();
 
-            if (ScriptingInterface.GetCvarValue<NetModel>("sys_netModel") == NetModel.ClientOnly)
+            if (ScriptingInterface.GetCvarValue<EngineModel>("sys_netModel") == EngineModel.ClientOnly)
                 return true;
 
             string serverPath = ScriptingInterface.GetCvarValue<string>("fs_server");
@@ -206,7 +212,7 @@ namespace DarkTech.Engine
         {
             client = new DummyClient();
 
-            if (ScriptingInterface.GetCvarValue<NetModel>("sys_netModel") == NetModel.ServerOnly)
+            if (ScriptingInterface.GetCvarValue<EngineModel>("sys_netModel") == EngineModel.ServerOnly)
                 return true;
 
             string clientPath = ScriptingInterface.GetCvarValue<string>("fs_client");
@@ -242,6 +248,86 @@ namespace DarkTech.Engine
             // Shut down systems and perform cleanup.
             Shutdown();
         }
+
+        private static void GameLoop()
+        {
+            ITimer timer = Platform.CreateTimer();
+
+            if (!timer.Initialize())
+            {
+                Engine.FatalError("Failed to initialize timer for game loop");
+            }
+
+            float tsClient = 1.0f / ScriptingInterface.GetCvarValue<int>("cl_fps");
+            float tsServer = 1.0f / ScriptingInterface.GetCvarValue<int>("sv_fps");
+            float tsDebug = 1.0f;
+
+            sys_model = Engine.ScriptingInterface.GetCvar<CvarEnum<EngineModel>>("sys_model");
+            clientTimer = new DeltaTimer(timer, tsClient);
+            serverTimer = new DeltaTimer(timer, tsServer);
+            debugTimer = new DeltaTimer(timer, tsDebug);
+
+            while (!shutdownRequested)
+            {
+                ServerFrame();
+                ClientFrame();
+                DebugFrame();
+            }
+
+            timer.Dispose();
+        }
+
+        private static void ServerFrame()
+        {
+            if (sys_model == EngineModel.ClientOnly)
+            {
+                return;
+            }
+
+            serverTimer.Update();
+
+            // Server receive.
+
+            while (serverTimer.HasNextFrame)
+            {
+                server.Update(serverTimer.Timestep);
+                serverTimer.RanFrame();
+            }
+        }
+
+        private static void ClientFrame()
+        {
+            if (sys_model == EngineModel.ServerOnly)
+            {
+                return;
+            }
+
+            clientTimer.Update();
+            Window.ProcessEvents();
+
+            while (clientTimer.HasNextFrame)
+            {
+                client.Update(clientTimer.Timestep);
+                clientTimer.RanFrame();
+            }
+
+            Renderer.BeginFrame();
+            client.Render();
+            Renderer.EndFrame();
+        }
+
+        private static void DebugFrame()
+        {
+            debugTimer.Update();
+
+            if (debugTimer.HasNextFrame)
+            {
+                // Compute client/server ups/fps.
+
+                debugTimer.ResetAccumilator();
+            }
+        }
+
         #endregion
 
         #region Shutdown
@@ -263,11 +349,8 @@ namespace DarkTech.Engine
             // Dispose resources.
             ResourceManager.Dispose();
 
-            // Dispose render queue so that the render back-end will exit properly in SMP mode.
-            renderQueue.Dispose();
-
             // Dispose the window which should also force it to close.
-            Window.Dispose();
+            Window.Destroy();
 
             hasShutdown = true;
         }
@@ -289,6 +372,18 @@ namespace DarkTech.Engine
             CvarBool r_restartRequested = ScriptingInterface.GetCvar<CvarBool>("r_restartRequested");
 
             r_restartRequested.Value = true;
+        }
+        #endregion
+
+        #region Cvar callbacks
+        private static void sv_fpsCallback(string name, int oldValue, int newValue)
+        {
+            serverTimer.Timestep = 1.0f / newValue;
+        }
+
+        private static void cl_fpsCallback(string name, int oldValue, int newValue)
+        {
+            clientTimer.Timestep = 1.0f / newValue;
         }
         #endregion
     }

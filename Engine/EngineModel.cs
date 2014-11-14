@@ -1,9 +1,9 @@
 ﻿namespace DarkTech.Engine
 {
     /// <summary>
-    /// The network model of the engine.
+    /// The model of the engine.
     /// </summary>
-    public enum NetModel
+    public enum EngineModel
     {
         /// <summary>
         /// Client only.

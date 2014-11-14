@@ -46,30 +46,15 @@
     <Compile Include="Events\EventMapping.cs" />
     <Compile Include="Events\EventPump.cs" />
     <Compile Include="Events\EventType.cs" />
-    <Compile Include="Graphics\DummyWindow.cs" />
     <Compile Include="Graphics\Render\IRenderer.cs" />
     <Compile Include="Graphics\Render\OpenGLRenderer.cs" />
     <Compile Include="Graphics\Vsync.cs" />
-    <Compile Include="Graphics\Windows\ClassStyles.cs" />
-    <Compile Include="Graphics\Windows\IdcStandardCursors.cs" />
-    <Compile Include="Graphics\Windows\Msg.cs" />
-    <Compile Include="Graphics\Windows\Point.cs" />
-    <Compile Include="Graphics\Windows\Rect.cs" />
-    <Compile Include="Graphics\Windows\ShowWindowCommands.cs" />
-    <Compile Include="Graphics\Windows\StockObjects.cs" />
-    <Compile Include="Graphics\Windows\SystemIcons.cs" />
-    <Compile Include="Graphics\Windows\Win32.cs" />
-    <Compile Include="Graphics\Windows\WindowStyles.cs" />
-    <Compile Include="Graphics\Windows\WindowStylesEx.cs" />
-    <Compile Include="Graphics\Windows\WindowWin.cs" />
-    <Compile Include="Graphics\Windows\Wm.cs" />
-    <Compile Include="Graphics\Windows\WndClass.cs" />
     <Compile Include="Logging\ConsoleLogWriter.cs" />
     <Compile Include="Logging\ILogReceiver.cs" />
     <Compile Include="Logging\LogChannel.cs" />
     <Compile Include="Logging\LogDispatcher.cs" />
     <Compile Include="Logging\LogWriter.cs" />
-    <Compile Include="NetModel.cs" />
+    <Compile Include="EngineModel.cs" />
     <Compile Include="Debug\Profiler.cs" />
     <Compile Include="Resources\ResourceCategory.cs" />
     <Compile Include="Sound\ActiveSound.cs" />
@@ -107,7 +92,6 @@
     <Compile Include="Temp\ComponentSet.cs" />
     <Compile Include="DummyClient.cs" />
     <Compile Include="DummyServer.cs" />
-    <Compile Include="Engine.GameLoop.cs" />
     <Compile Include="EngineConfiguration.cs" />
     <Compile Include="Temp\Event.cs" />
     <Compile Include="Temp\EventDispatcher.cs" />
@@ -126,7 +110,7 @@
     <Compile Include="Scripting\CachedCvar.cs" />
     <Compile Include="Scripting\CommandBuffer.cs" />
     <Compile Include="Scripting\CvarBool.cs" />
-    <Compile Include="Engine.Main.cs" />
+    <Compile Include="Engine.cs" />
     <Compile Include="Engine.Printing.cs" />
     <Compile Include="Temp\Entity.cs" />
     <Compile Include="Temp\EntityGroup.cs" />
@@ -157,7 +141,6 @@
     <Compile Include="Scripting\ScriptingInterface.cs" />
     <Compile Include="Scripting\Arg.cs" />
     <Compile Include="Scripting\ArgType.cs" />
-    <Compile Include="Graphics\IWindow.cs" />
     <Compile Include="Timing\DeltaTimer.cs" />
     <Compile Include="Timing\ITimer.cs" />
     <Compile Include="Timing\TimerWin.cs" />
@@ -175,6 +158,10 @@
     <ProjectReference Include="..\DarkGL\DarkGL.csproj">
       <Project>{dd7fa289-5fc7-492d-83e9-50b45f9c4064}</Project>
       <Name>DarkGL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WindowLib\WindowLib.csproj">
+      <Project>{154a2a94-9ab0-4d65-8b95-cc7d20e49993}</Project>
+      <Name>WindowLib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
