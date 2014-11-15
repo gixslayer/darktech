@@ -308,17 +308,23 @@ namespace DarkTech.Engine
         #region Shutdown
         private static void Shutdown()
         {
-            // Dispose server and client.
-            server.Dispose();
-            client.Dispose();
-
-            // Dispose resources.
             ResourceManager.Dispose();
-
-            // Dispose the window which should also force it to close.
-            Window.Destroy();
-
             Timer.Dispose();
+
+            if (HasServer)
+            {
+                server.Dispose();
+            }
+
+            if (HasClient)
+            {
+                client.Dispose();
+                SoundSystem.Dispose();
+                Renderer.Dispose();
+                Window.Destroy();
+            }
+
+            Log.Dispose();
         }
         #endregion
 
