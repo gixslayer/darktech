@@ -17,26 +17,26 @@ namespace DarkTech.Engine.Utils
                 return null;
             }
 
-            File file;
-
-            if (!Engine.FileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, out file))
-                return null;
-
-            byte[] assemblyData = new byte[file.Size];
-            file.Read(assemblyData, 0, assemblyData.Length);
-
-            file.Dispose();
-
             try
             {
+                File file = Engine.FileSystem.OpenFile(path, FileMode.Open, FileAccess.Read);
+                byte[] assemblyData = new byte[file.Size];
+                file.Read(assemblyData, 0, assemblyData.Length);
+
+                file.Dispose();
+
                 return Assembly.Load(assemblyData);
+            }
+            catch (FileSystemException e)
+            {
+                Engine.Log.WriteLine("error/system/assembly", "Failed to open assembly {0} ({1})", path, e.Message);
             }
             catch (BadImageFormatException)
             {
                 Engine.Log.WriteLine("error/system/assembly", "Failed to load assembly {0} (bad image format)", path);
-
-                return null;
             }
+
+            return null;
         }
 
         public static T LoadType<T>(string path)

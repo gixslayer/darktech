@@ -14,9 +14,9 @@ namespace DarkTech.Engine
 {
     internal static class SystemFactory
     {
-        public static IFileSystem CreateFileSystem()
+        public static FileSystem.FileSystem CreateFileSystem()
         {
-            return Platform.CreateFileSystem();
+            return new FileSystem.FileSystem();
         }
 
         public static Window CreateWindow()

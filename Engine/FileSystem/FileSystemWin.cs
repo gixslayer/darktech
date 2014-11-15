@@ -2,39 +2,27 @@
 using IO = System.IO;
 using StringBuilder = System.Text.StringBuilder;
 
-using DarkTech.Engine.Scripting;
-
 namespace DarkTech.Engine.FileSystem
 {
-    internal sealed class FileSystemWin : IFileSystem
+    internal sealed class FileSystemWin : INativeFileSystem
     {
         public const char DIRECTORY_SEPARATOR = '\\';
         public const string DIRECTORY_SEPARATOR_STR = "\\";
 
-        private static readonly string[] ARRAY_EMPTY = new string[0];
-
-        // NOTE: Enforce fs_root does not end with a directory separator.
-        private string rootDirectory;
-
-        public FileSystemWin()
-        {
-            rootDirectory = Engine.ScriptingInterface.GetCvarValue<string>("fs_root");
-        }
-
         public bool DirectoryExists(string path)
         {
-            return IO.Directory.Exists(CombinePath(rootDirectory, path));
+            return IO.Directory.Exists(path);
         }
 
         public void CreateDirectory(string path)
         {
             try
             {
-                IO.Directory.CreateDirectory(CombinePath(rootDirectory, path));
+                IO.Directory.CreateDirectory(path);
             }
             catch (Exception e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", "Failed to create directory {0} > {1}", path, e.Message);
+                throw new FileSystemException(e.Message);
             }
         }
 
@@ -42,34 +30,27 @@ namespace DarkTech.Engine.FileSystem
         {
             try
             {
-                IO.Directory.Delete(CombinePath(rootDirectory, path), true);
+                IO.Directory.Delete(path, true);
             }
             catch (Exception e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", "Failed to delete directory {0} > {1}", path, e.Message);
+                throw new FileSystemException(e.Message);
             }
         }
 
         public string[] GetFiles(string path)
         {
             // Get the directory info for the specified path.
+            // The caller made sure the directory actually exists.
             IO.DirectoryInfo directoryInfo;
 
             try
             {
-                directoryInfo = new IO.DirectoryInfo(CombinePath(rootDirectory, path));
+                directoryInfo = new IO.DirectoryInfo(path);
             }
             catch (Exception e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", "Failed to get files in directory {0} > {1}", path, e.Message);
-
-                return ARRAY_EMPTY;
-            }
-
-            // If the directory does not exist it will not contain any files.
-            if (!directoryInfo.Exists)
-            {
-                return ARRAY_EMPTY;
+                throw new FileSystemException(e.Message);
             }
 
             // Get all files inside the top level of the directory.
@@ -81,9 +62,7 @@ namespace DarkTech.Engine.FileSystem
             }
             catch (Exception e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", "Failed to get files in directory {0} > {1}", path, e.Message);
-
-                return ARRAY_EMPTY;
+                throw new FileSystemException(e.Message);
             }
 
             // Copy their names into an array.
@@ -101,23 +80,16 @@ namespace DarkTech.Engine.FileSystem
         public string[] GetDirectories(string path)
         {
             // Get the directory info for the specified path.
+            // The caller made sure the directory actually exists.
             IO.DirectoryInfo directoryInfo;
 
             try
             {
-                directoryInfo = new IO.DirectoryInfo(CombinePath(rootDirectory, path));
+                directoryInfo = new IO.DirectoryInfo(path);
             }
             catch (Exception e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", "Failed to get directories in directory {0} > {1}", path, e.Message);
-
-                return ARRAY_EMPTY;
-            }
-
-            // If the directory does not exist it will not contain any directories.
-            if (!directoryInfo.Exists)
-            {
-                return ARRAY_EMPTY;
+                throw new FileSystemException(e.Message);
             }
 
             // Get all directories inside the top level of the directory.
@@ -129,9 +101,7 @@ namespace DarkTech.Engine.FileSystem
             }
             catch (Exception e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", "Failed to get directories in directory {0} > {1}", path, e.Message);
-
-                return ARRAY_EMPTY;
+                throw new FileSystemException(e.Message);
             }
             
             // Copy their names into an array.
@@ -148,18 +118,18 @@ namespace DarkTech.Engine.FileSystem
 
         public bool FileExists(string path)
         {
-            return IO.File.Exists(CombinePath(rootDirectory, path));
+            return IO.File.Exists(path);
         }
 
         public void DeleteFile(string path)
         {
             try
             {
-                IO.File.Delete(CombinePath(rootDirectory, path));
+                IO.File.Delete(path);
             }
             catch (Exception e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", "Failed to delete file {0} > {1}", path, e.Message);
+                throw new FileSystemException(e.Message);
             }
         }
 
@@ -170,21 +140,11 @@ namespace DarkTech.Engine.FileSystem
 
             try
             {
-                fileInfo = new IO.FileInfo(CombinePath(rootDirectory, path));
+                fileInfo = new IO.FileInfo(path);
             }
             catch (Exception e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", "Failed to get file info of {0} > {1}", path, e.Message);
-
-                return null;
-            }
-
-            // Make sure the file exists.
-            if (!fileInfo.Exists)
-            {
-                Engine.Log.WriteLine("error/system/filesystem", "Could not find file {0}", path);
-
-                return null;
+                throw new FileSystemException(e.Message);
             }
 
             // Extract the information required.
@@ -193,16 +153,11 @@ namespace DarkTech.Engine.FileSystem
             string parentPath = fileInfo.DirectoryName;
             long size = fileInfo.Length;
 
-            // Make sure the parentPath is relative to the file system root.
-            parentPath = parentPath == rootDirectory ? string.Empty : parentPath.Substring(rootDirectory.Length + 1);
-
             return new FileInfo(name, extension, parentPath, size);
         }
 
-        public bool OpenFile(string path, FileMode mode, FileAccess access, out File file)
+        public File OpenFile(string path, FileMode mode, FileAccess access)
         {
-            file = null;
-
             // Resolve the OpenOrCreate file mode.
             if (mode == FileMode.OpenOrCreate)
             {
@@ -213,24 +168,16 @@ namespace DarkTech.Engine.FileSystem
             IO.FileMode fileMode = ConvertMode(mode);
             IO.FileAccess fileAccess = ConvertAccess(access);
 
-            // Verify the combination of file mode and access is valid.
-            if (!VerifyAccess(mode, access))
-            {
-                return false;
-            }
-
             // Attempt to open the stream.
             IO.Stream stream;
 
             try
             {
-                stream = new IO.FileStream(CombinePath(rootDirectory, path), fileMode, fileAccess);
+                stream = new IO.FileStream(path, fileMode, fileAccess);
             }
             catch (Exception e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", "Failed to open file {0} > {1}", path, e.Message);
-
-                return false;
+                throw new FileSystemException(e.Message);
             }
 
             // Build the file info.
@@ -245,33 +192,44 @@ namespace DarkTech.Engine.FileSystem
                 fileInfo = CreateFileInfo(path);
             }
 
-            file = new File(fileInfo, stream);
-
-            return true;
+            return new File(fileInfo, stream);
         }
 
-        private FileInfo CreateFileInfo(string path)
+        public string CombinePaths(params string[] paths)
         {
-            string name;
+            StringBuilder stringBuilder = new StringBuilder();
+            string path;
+
+            for (int i = 0; i < paths.Length; i++)
+            {
+                path = paths[i];
+
+                // Strip path separators.
+                path = path.TrimStart(DIRECTORY_SEPARATOR);
+                path = path.TrimEnd(DIRECTORY_SEPARATOR);
+
+                // Ignore empty paths.
+                if (string.IsNullOrWhiteSpace(path))
+                    continue;
+
+                // Append the path and a directory separator to the return value.
+                stringBuilder.Append(path);
+                stringBuilder.Append(DIRECTORY_SEPARATOR);
+            }
+
+            // Strip any tailing directory separators.
+            return stringBuilder.ToString().TrimEnd(DIRECTORY_SEPARATOR);
+        }
+
+        private static FileInfo CreateFileInfo(string path)
+        {
+            string name = path.Substring(path.LastIndexOf(DIRECTORY_SEPARATOR_STR) + 1);
+            string parentPath = path.Substring(0, path.Length - (name.Length + 1));
             string extension = string.Empty;
-            string parentPath = string.Empty;
             long size = 0;
 
-            string fullPath = CombinePath(rootDirectory, path);
-            string relative = fullPath.Substring(rootDirectory.Length + 1);
-
-            if (relative.Contains(DIRECTORY_SEPARATOR_STR))
-            {
-                name = relative.Substring(relative.LastIndexOf(DIRECTORY_SEPARATOR_STR) + 1);
-                parentPath = relative.Substring(0, relative.Length - (name.Length + 1));
-            }
-            else
-            {
-                name = relative;
-            }
-
             // A file name should not be able to end with a period.
-            if (name.Contains("."))
+            if (name.Contains(".") && !name.EndsWith(".") && name.LastIndexOf('.') != 0)
             {
                 extension = name.Substring(name.LastIndexOf(".") + 1);
             }
@@ -307,51 +265,6 @@ namespace DarkTech.Engine.FileSystem
                 default:
                     throw new ArgumentException("Unknown file access", "access");
             }
-        }
-
-        private static bool VerifyAccess(FileMode mode, FileAccess access)
-        {
-            if (mode == FileMode.Append && access != FileAccess.Write)
-            {
-                Engine.Log.WriteLine("error/system/filesystem", "Invalid access flags on FileMode.Append, only write access is allowed");
-
-                return false;
-            }
-
-            if (mode == FileMode.Create && !access.HasFlag(FileAccess.Write))
-            {
-                Engine.Log.WriteLine("error/system/filesystem", "Missing write access on FileMode.Create");
-
-                return false;
-            }
-
-            return true;
-        }
-
-        private static string CombinePath(params string[] paths)
-        {
-            StringBuilder stringBuilder = new StringBuilder();
-            string path;
-
-            for (int i = 0; i < paths.Length; i++)
-            {
-                path = paths[i];
-
-                // Strip path separators.
-                path = path.TrimStart(DIRECTORY_SEPARATOR);
-                path = path.TrimEnd(DIRECTORY_SEPARATOR);
-
-                // Ignore empty paths.
-                if (string.IsNullOrWhiteSpace(path))
-                    continue;
-
-                // Append the path and a directory separator to the return value.
-                stringBuilder.Append(path);
-                stringBuilder.Append(DIRECTORY_SEPARATOR);
-            }
-
-            // Strip any tailing directory separators.
-            return stringBuilder.ToString().TrimEnd(DIRECTORY_SEPARATOR);
         }
     }
 }

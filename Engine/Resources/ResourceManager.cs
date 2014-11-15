@@ -88,15 +88,17 @@ namespace DarkTech.Engine.Resources
                 return true;
             }
 
-            if (!Engine.FileSystem.OpenFile(path, FileMode.Open, FileAccess.Read, out file))
-            {
-                return false;
-            }
-
             // Load the pak file.
             try
             {
+                file = Engine.FileSystem.OpenFile(path, FileMode.Open, FileAccess.Read);
                 pakFile = new PakFile(file);
+            }
+            catch (FileSystemException e)
+            {
+                Engine.Log.WriteLine("error/system/resourcemanager", "Could not open file {0} ({1})", path, e.Message);
+
+                return false;
             }
             catch (PakException e)
             {

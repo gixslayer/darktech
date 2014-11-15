@@ -22,7 +22,7 @@ namespace DarkTech.Engine
         private static DeltaTimer debugTimer;
 
         public static LogDispatcher Log { get; private set; }
-        public static IFileSystem FileSystem { get; private set; }
+        public static FileSystem.FileSystem FileSystem { get; private set; }
         public static ResourceManager ResourceManager { get; private set; }
         public static ScriptingInterface ScriptingInterface { get; private set; }
         public static ISoundSystem SoundSystem { get; private set; }

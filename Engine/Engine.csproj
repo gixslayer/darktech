@@ -47,6 +47,9 @@
     <Compile Include="Events\EventMapping.cs" />
     <Compile Include="Events\EventPump.cs" />
     <Compile Include="Events\EventType.cs" />
+    <Compile Include="FileSystem\FileSystem.cs" />
+    <Compile Include="FileSystem\FileSystemException.cs" />
+    <Compile Include="FileSystem\INativeFileSystem.cs" />
     <Compile Include="Graphics\Render\IRenderer.cs" />
     <Compile Include="Graphics\Render\OpenGLRenderer.cs" />
     <Compile Include="Graphics\Vsync.cs" />

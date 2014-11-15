@@ -40,14 +40,19 @@ namespace DarkTech.Engine.Logging
 
         public bool Initialize()
         {
-            if (!Engine.FileSystem.OpenFile(path, FileMode.Append, FileAccess.Write, out file))
+            try
             {
+                file = Engine.FileSystem.OpenFile(path, FileMode.Append, FileAccess.Write);
+                writer = new StreamWriter(file.Stream, System.Text.Encoding.UTF8);
+
+                return true;
+            }
+            catch (FileSystemException e)
+            {
+                Engine.Log.WriteLine("error/system/log", "Failed to open log file {0} ({1})", path, e.Message);
+
                 return false;
             }
-
-            writer = new StreamWriter(file.Stream, System.Text.Encoding.UTF8);
-
-            return true;
         }
 
         public void WriteLine(string channel, string message)

@@ -16,7 +16,7 @@
         /// <summary>
         /// The full path of the parent directory relative to the root of the file system.
         /// </summary>
-        public string ParentPath { get; private set; }
+        public string ParentPath { get; internal set; }
         /// <summary>
         /// The size of the file in bytes.
         /// </summary>

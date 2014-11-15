@@ -18,17 +18,6 @@ namespace DarkTech.Engine
             }
         }
 
-        public static IFileSystem CreateFileSystem()
-        {
-            switch (Environment.OSVersion.Platform)
-            {
-                case PlatformID.Win32NT:
-                    return new FileSystemWin();
-                default:
-                    throw new PlatformNotSupportedException("No IFileSystem implementation for current platform");
-            }
-        }
-
         public static ITimer CreateTimer()
         {
             switch (Environment.OSVersion.Platform)
@@ -37,6 +26,17 @@ namespace DarkTech.Engine
                     return new TimerWin();
                 default:
                     throw new PlatformNotSupportedException("No ITimer implementation for current platform");
+            }
+        }
+
+        public static INativeFileSystem CreateNativeFileSystem()
+        {
+            switch (Environment.OSVersion.Platform)
+            {
+                case PlatformID.Win32NT:
+                    return new FileSystemWin();
+                default:
+                    throw new PlatformNotSupportedException("No INativeFileSystem implementation for current platform");
             }
         }
     }
