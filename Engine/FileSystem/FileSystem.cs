@@ -14,6 +14,11 @@
         public bool DirectoryExists(string path)
         {
             string actualPath = nativeFileSystem.CombinePaths(fs_root, path);
+            
+            if (string.IsNullOrWhiteSpace(path))
+                throw new System.ArgumentException("Path cannot be empty", "path");
+            if (!nativeFileSystem.IsPathValid(actualPath, false))
+                throw new InvalidPathException(actualPath);
 
             try
             {
@@ -21,7 +26,7 @@
             }
             catch (FileSystemException e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to check if directory {0} exists ({1})", path, e.Message);
 
                 return false;
             }
@@ -31,13 +36,18 @@
         {
             string actualPath = nativeFileSystem.CombinePaths(fs_root, path);
 
+            if (string.IsNullOrWhiteSpace(path))
+                throw new System.ArgumentException("Path cannot be empty", "path");
+            if (!nativeFileSystem.IsPathValid(actualPath, false))
+                throw new InvalidPathException(actualPath);
+
             try
             {
                 nativeFileSystem.CreateDirectory(actualPath);
             }
             catch (FileSystemException e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to create directory {0} ({1})", path, e.Message);
             }
         }
 
@@ -45,19 +55,27 @@
         {
             string actualPath = nativeFileSystem.CombinePaths(fs_root, path);
 
+            if (string.IsNullOrWhiteSpace(path))
+                throw new System.ArgumentException("Path cannot be empty", "path");
+            if (!nativeFileSystem.IsPathValid(actualPath, false))
+                throw new InvalidPathException(actualPath);
+
             try
             {
                 nativeFileSystem.DeleteDirectory(actualPath);
             }
             catch (FileSystemException e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to delete directory {0} ({1})", path, e.Message);
             }
         }
 
         public string[] GetDirectories(string path)
         {
             string actualPath = nativeFileSystem.CombinePaths(fs_root, path);
+
+            if (!nativeFileSystem.IsPathValid(actualPath, false))
+                throw new InvalidPathException(actualPath);
 
             try
             {
@@ -70,7 +88,7 @@
             }
             catch (FileSystemException e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to get directories in directory {0} ({1})", path, e.Message);
 
                 return new string[0];
             }
@@ -79,6 +97,9 @@
         public string[] GetFiles(string path)
         {
             string actualPath = nativeFileSystem.CombinePaths(fs_root, path);
+
+            if (!nativeFileSystem.IsPathValid(actualPath, false))
+                throw new InvalidPathException(actualPath);
 
             try
             {
@@ -91,7 +112,7 @@
             }
             catch (FileSystemException e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to get files in directory {0} ({1})", path, e.Message);
 
                 return new string[0];
             }
@@ -101,13 +122,18 @@
         {
             string actualPath = nativeFileSystem.CombinePaths(fs_root, path);
 
+            if (string.IsNullOrWhiteSpace(path))
+                throw new System.ArgumentException("Path cannot be empty", "path");
+            if (!nativeFileSystem.IsPathValid(actualPath, true))
+                throw new InvalidPathException(actualPath);
+
             try
             {
                 return nativeFileSystem.FileExists(actualPath);
             }
             catch (FileSystemException e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to check if file {0} exists ({1})", path, e.Message);
 
                 return false;
             }
@@ -117,13 +143,18 @@
         {
             string actualPath = nativeFileSystem.CombinePaths(fs_root, path);
 
+            if (string.IsNullOrWhiteSpace(path))
+                throw new System.ArgumentException("Path cannot be empty", "path");
+            if (!nativeFileSystem.IsPathValid(actualPath, true))
+                throw new InvalidPathException(actualPath);
+
             try
             {
                 nativeFileSystem.DeleteFile(actualPath);
             }
             catch (FileSystemException e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to delete file {0} ({1})", path, e.Message);
             }
         }
 
@@ -131,11 +162,16 @@
         {
             string actualPath = nativeFileSystem.CombinePaths(fs_root, path);
 
+            if (string.IsNullOrWhiteSpace(path))
+                throw new System.ArgumentException("Path cannot be empty", "path");
+            if (!nativeFileSystem.IsPathValid(actualPath, true))
+                throw new InvalidPathException(actualPath);
+
             try
             {
                 if (!nativeFileSystem.FileExists(path))
                 {
-                    throw new FileSystemException("Could not find file {0}", path);
+                    throw new FileNotFoundException("File not found");
                 }
 
                 FileInfo info = nativeFileSystem.GetFileInfo(actualPath);
@@ -146,9 +182,9 @@
             }
             catch (FileSystemException e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to get file info for {0} ({1})", path, e.Message);
 
-                throw e;
+                throw;
             }
         }
 
@@ -156,21 +192,16 @@
         {
             string actualPath = nativeFileSystem.CombinePaths(fs_root, path);
 
-            // Verify file mode/access flags.
+            if (string.IsNullOrWhiteSpace(path))
+                throw new System.ArgumentException("Path cannot be empty", "path");
+            if (!nativeFileSystem.IsPathValid(actualPath, true))
+                throw new InvalidPathException(actualPath);
             if (mode == FileMode.Append && access != FileAccess.Write)
-            {
-                Engine.Log.WriteLine("error/system/filesystem", "Invalid access flags on file {0} (FileMode.Append can only have FileAccess.Read", path);
-
-                throw new FileSystemException("Invalid access flags on file {0}", path);
-            }
+                throw new System.ArgumentException("FileMode.Append can only have FileAccess.Read", "access");
             else if (mode == FileMode.Create && !access.HasFlag(FileAccess.Write))
-            {
-
-            }
+                throw new System.ArgumentException("FileMode.Create requires FileAccess.Write", "access");
             else if (mode == FileMode.OpenOrCreate && !access.HasFlag(FileAccess.Write))
-            {
-
-            }
+                throw new System.ArgumentException("FileMode.Create requires FileAccess.Write", "access");
 
             try
             {
@@ -182,9 +213,9 @@
             }
             catch (FileSystemException e)
             {
-                Engine.Log.WriteLine("error/system/filesystem", e.Message);
+                Engine.Log.WriteLine("error/system/filesystem", "Failed to open file {0} ({1})", path, e.Message);
 
-                throw e;
+                throw;
             }
         }
     }

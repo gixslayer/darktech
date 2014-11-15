@@ -11,6 +11,8 @@
         void DeleteFile(string path);
         FileInfo GetFileInfo(string path);
         File OpenFile(string path, FileMode mode, FileAccess access);
+
         string CombinePaths(params string[] paths);
+        bool IsPathValid(string path, bool fileName);
     }
 }

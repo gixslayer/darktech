@@ -8,6 +8,8 @@ namespace DarkTech.Engine.FileSystem
     {
         public const char DIRECTORY_SEPARATOR = '\\';
         public const string DIRECTORY_SEPARATOR_STR = "\\";
+        public const int MAX_PATH_LENGTH = 248;
+        public const int MAX_FILENAME_LENGTH = 260;
 
         public bool DirectoryExists(string path)
         {
@@ -20,9 +22,21 @@ namespace DarkTech.Engine.FileSystem
             {
                 IO.Directory.CreateDirectory(path);
             }
-            catch (Exception e)
+            catch (IO.DirectoryNotFoundException)
             {
-                throw new FileSystemException(e.Message);
+                throw new IOException("Invalid path");
+            }
+            catch (IO.IOException)
+            {
+                throw new IOException("Path is a file");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                throw new SecurityException("No permission");
+            }
+            catch (NotSupportedException)
+            {
+                throw new IOException("Invalid drive label");
             }
         }
 
@@ -32,9 +46,17 @@ namespace DarkTech.Engine.FileSystem
             {
                 IO.Directory.Delete(path, true);
             }
-            catch (Exception e)
+            catch (UnauthorizedAccessException)
             {
-                throw new FileSystemException(e.Message);
+                throw new SecurityException("No permission");
+            }
+            catch (IO.DirectoryNotFoundException)
+            {
+                throw new DirectoryNotFoundException("Path not found");
+            }
+            catch (IO.IOException)
+            {
+                throw new IOException("Generic IO exception");
             }
         }
 
@@ -48,9 +70,9 @@ namespace DarkTech.Engine.FileSystem
             {
                 directoryInfo = new IO.DirectoryInfo(path);
             }
-            catch (Exception e)
+            catch (System.Security.SecurityException)
             {
-                throw new FileSystemException(e.Message);
+                throw new SecurityException("No permission");
             }
 
             // Get all files inside the top level of the directory.
@@ -60,9 +82,9 @@ namespace DarkTech.Engine.FileSystem
             {
                 files = directoryInfo.GetFiles("*", IO.SearchOption.TopDirectoryOnly);
             }
-            catch (Exception e)
+            catch (System.Security.SecurityException)
             {
-                throw new FileSystemException(e.Message);
+                throw new SecurityException("No permission");
             }
 
             // Copy their names into an array.
@@ -87,9 +109,9 @@ namespace DarkTech.Engine.FileSystem
             {
                 directoryInfo = new IO.DirectoryInfo(path);
             }
-            catch (Exception e)
+            catch (System.Security.SecurityException)
             {
-                throw new FileSystemException(e.Message);
+                throw new SecurityException("No permission");
             }
 
             // Get all directories inside the top level of the directory.
@@ -99,9 +121,9 @@ namespace DarkTech.Engine.FileSystem
             {
                 directories = directoryInfo.GetDirectories("*", IO.SearchOption.TopDirectoryOnly);
             }
-            catch (Exception e)
+            catch (System.Security.SecurityException)
             {
-                throw new FileSystemException(e.Message);
+                throw new SecurityException("No permission");
             }
             
             // Copy their names into an array.
@@ -127,9 +149,17 @@ namespace DarkTech.Engine.FileSystem
             {
                 IO.File.Delete(path);
             }
-            catch (Exception e)
+            catch (UnauthorizedAccessException)
             {
-                throw new FileSystemException(e.Message);
+                throw new SecurityException("No permission");
+            }
+            catch (IO.DirectoryNotFoundException)
+            {
+                throw new DirectoryNotFoundException("Path not found");
+            }
+            catch (IO.IOException)
+            {
+                throw new IOException("File in use/open handle");
             }
         }
 
@@ -142,9 +172,13 @@ namespace DarkTech.Engine.FileSystem
             {
                 fileInfo = new IO.FileInfo(path);
             }
-            catch (Exception e)
+            catch (System.Security.SecurityException)
             {
-                throw new FileSystemException(e.Message);
+                throw new SecurityException("No permission");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                throw new SecurityException("Access to file is denied");
             }
 
             // Extract the information required.
@@ -175,9 +209,29 @@ namespace DarkTech.Engine.FileSystem
             {
                 stream = new IO.FileStream(path, fileMode, fileAccess);
             }
-            catch (Exception e)
+            catch (NotSupportedException)
             {
-                throw new FileSystemException(e.Message);
+                throw new IOException("Path refers to a non-file device");
+            }
+            catch (IO.FileNotFoundException)
+            {
+                throw new FileNotFoundException("File not found");
+            }
+            catch (IO.DirectoryNotFoundException)
+            {
+                throw new DirectoryNotFoundException("Invalid path");
+            }
+            catch (IO.IOException)
+            {
+                throw new IOException("Generic IO exception");
+            }
+            catch (System.Security.SecurityException)
+            {
+                throw new SecurityException("No permission");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                throw new SecurityException("Requested access denied");
             }
 
             // Build the file info.
@@ -204,6 +258,10 @@ namespace DarkTech.Engine.FileSystem
             {
                 path = paths[i];
 
+                // Ignore null paths.
+                if (path == null)
+                    continue;
+
                 // Strip path separators.
                 path = path.TrimStart(DIRECTORY_SEPARATOR);
                 path = path.TrimEnd(DIRECTORY_SEPARATOR);
@@ -219,6 +277,43 @@ namespace DarkTech.Engine.FileSystem
 
             // Strip any tailing directory separators.
             return stringBuilder.ToString().TrimEnd(DIRECTORY_SEPARATOR);
+        }
+
+        public bool IsPathValid(string path, bool fileName)
+        {
+            // path should always be a rooted path (X:\...).
+            if (string.IsNullOrWhiteSpace(path)) return false;
+            if (path.StartsWith(":")) return false;
+            if (path.Length < 2 || path[1] != ':') return false;
+
+            foreach (char c in IO.Path.GetInvalidPathChars())
+            {
+                // String did not have a bool Contains(char) signature.
+                // Perhaps a missing reference/namespace?
+                // Using this workaround to effectively do the same thing.
+                if (path.IndexOf(c) >= 0)
+                    return false;
+            }
+
+            if (fileName)
+            {
+                if (!path.Contains(DIRECTORY_SEPARATOR_STR)) 
+                    return false;
+                if (path.EndsWith(DIRECTORY_SEPARATOR_STR))
+                    return false;
+                
+                string name = path.Substring(path.LastIndexOf(DIRECTORY_SEPARATOR) + 1);
+
+                foreach (char c in IO.Path.GetInvalidFileNameChars())
+                {
+                    if (name.IndexOf(c) >= 0)
+                        return false;
+                }
+            }
+
+            int maxLength = fileName ? MAX_FILENAME_LENGTH : MAX_PATH_LENGTH;
+
+            return path.Length <= maxLength;
         }
 
         private static FileInfo CreateFileInfo(string path)

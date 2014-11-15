@@ -47,9 +47,14 @@
     <Compile Include="Events\EventMapping.cs" />
     <Compile Include="Events\EventPump.cs" />
     <Compile Include="Events\EventType.cs" />
+    <Compile Include="FileSystem\DirectoryNotFoundException.cs" />
+    <Compile Include="FileSystem\FileNotFoundException.cs" />
     <Compile Include="FileSystem\FileSystem.cs" />
     <Compile Include="FileSystem\FileSystemException.cs" />
     <Compile Include="FileSystem\INativeFileSystem.cs" />
+    <Compile Include="FileSystem\InvalidPathException.cs" />
+    <Compile Include="FileSystem\IOException.cs" />
+    <Compile Include="FileSystem\SecurityException.cs" />
     <Compile Include="Graphics\Render\IRenderer.cs" />
     <Compile Include="Graphics\Render\OpenGLRenderer.cs" />
     <Compile Include="Graphics\Vsync.cs" />
@@ -112,7 +117,6 @@
     <Compile Include="FileSystem\FileAccess.cs" />
     <Compile Include="FileSystem\FileInfo.cs" />
     <Compile Include="FileSystem\FileMode.cs" />
-    <Compile Include="FileSystem\IFileSystem.cs" />
     <Compile Include="FileSystem\FileSystemWin.cs" />
     <Compile Include="Resources\ResourceManager.cs" />
     <Compile Include="Scripting\Command.cs" />
