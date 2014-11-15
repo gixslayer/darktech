@@ -65,7 +65,12 @@
     <Compile Include="Logging\LogWriter.cs" />
     <Compile Include="EngineModel.cs" />
     <Compile Include="Debug\Profiler.cs" />
+    <Compile Include="Resources\DuplicateResourceException.cs" />
+    <Compile Include="Resources\LoadResourceException.cs" />
     <Compile Include="Resources\ResourceCategory.cs" />
+    <Compile Include="Resources\ResourceException.cs" />
+    <Compile Include="Resources\ResourceLoaderNotFoundException.cs" />
+    <Compile Include="Resources\ResourceNotFoundException.cs" />
     <Compile Include="Sound\ActiveSound.cs" />
     <Compile Include="Sound\CommandNOP.cs" />
     <Compile Include="Sound\CommandPlaySoundAt.cs" />
