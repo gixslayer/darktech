@@ -6,12 +6,18 @@ namespace DarkTech.Engine.Graphics.Render
     {
         private Context context;
 
-        public bool Initialize()
+        public void Initialize()
         {
             ContextSettings settings = ContextSettings.DEFAULT;
-            context = Context.CreateContext(Engine.Window.Handle, settings);
 
-            return true;
+            try
+            {
+                context = Context.CreateContext(Engine.Window.Handle, settings);
+            }
+            catch (GLException e)
+            {
+                throw new InitializeException("Failed to create OpenGL context: {0}", e.Message);
+            }
         }
 
         public void Dispose()

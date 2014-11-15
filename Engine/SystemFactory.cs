@@ -23,6 +23,7 @@ namespace DarkTech.Engine
         {
             IntPtr hInstance = Process.GetCurrentProcess().Handle;
             WindowConfiguration config = new WindowConfiguration();
+            Window window;
 
             config.ClassName = Engine.ScriptingInterface.GetCvarValue<string>("w_className");
             config.Title = Engine.ScriptingInterface.GetCvarValue<string>("w_title");
@@ -32,7 +33,17 @@ namespace DarkTech.Engine
             config.Height = Engine.ScriptingInterface.GetCvarValue<int>("w_height");
             config.Mode = Engine.ScriptingInterface.GetCvarValue<bool>("w_noBorder") ? WindowMode.NoBorder : WindowMode.Windowed;
 
-            return Window.CreateWindow(hInstance, config);
+            try
+            {
+                window = Window.CreateWindow(hInstance, config);
+                window.Create();
+            }
+            catch (WindowException e)
+            {
+                throw new InitializeException("Failed to create window: {0}", e.Message);
+            }
+
+            return window;
         }
 
         public static ResourceManager CreateResourceManager()
@@ -60,7 +71,14 @@ namespace DarkTech.Engine
 
         public static ITimer CreateTimer()
         {
-            return Platform.CreateTimer();
+            ITimer timer =  Platform.CreateTimer();
+
+            if (!timer.Initialize())
+            {
+                throw new InitializeException("Timer failed to initialize");
+            }
+
+            return timer;
         }
     }
 }

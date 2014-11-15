@@ -3,7 +3,7 @@ namespace DarkTech.Engine.Graphics.Render
 {
     public interface IRenderer
     {
-        bool Initialize();
+        void Initialize();
         void Dispose();
 
         void BeginFrame();

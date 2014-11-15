@@ -1,7 +1,6 @@
 ﻿using System;
 
 using DarkTech.Engine.FileSystem;
-using DarkTech.Engine.Graphics;
 using DarkTech.Engine.Timing;
 
 namespace DarkTech.Engine
@@ -26,7 +25,7 @@ namespace DarkTech.Engine
                 case PlatformID.Win32NT:
                     return new FileSystemWin();
                 default:
-                    throw new PlatformNotSupportedException("Could not create IFileSystem implementation for current platform");
+                    throw new PlatformNotSupportedException("No IFileSystem implementation for current platform");
             }
         }
 
@@ -37,7 +36,7 @@ namespace DarkTech.Engine
                 case PlatformID.Win32NT:
                     return new TimerWin();
                 default:
-                    throw new PlatformNotSupportedException("Could not create ITimer implementation for current platform");
+                    throw new PlatformNotSupportedException("No ITimer implementation for current platform");
             }
         }
     }

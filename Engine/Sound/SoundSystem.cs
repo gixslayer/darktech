@@ -9,9 +9,9 @@
             this.backEnd = new BackEnd();
         }
 
-        public bool Initialize()
+        public void Initialize()
         {
-            return backEnd.Initialize();
+            backEnd.Initialize();
         }
 
         public void Start()

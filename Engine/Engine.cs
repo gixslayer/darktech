@@ -13,8 +13,6 @@ namespace DarkTech.Engine
 {
     public static partial class Engine
     {
-        private static volatile bool shutdownRequested;
-        private static bool hasShutdown;
         private static IClient client;
         private static IServer server;
         private static CvarBool sv_cheats;
@@ -31,18 +29,19 @@ namespace DarkTech.Engine
         public static Window Window { get; private set; }
         public static IRenderer Renderer { get; private set; }
         public static ITimer Timer { get; private set; }
-        public static bool ShutdownRequested { get { return shutdownRequested; } }
+        public static bool ShutdownRequested { get; private set; }
         public static bool CheatsEnabled { get { return sv_cheats; } }
         public static EngineModel Model { get { return sys_model.Value; } }
         public static bool HasClient { get { return Model != EngineModel.ServerOnly; } }
         public static bool HasServer { get { return Model != EngineModel.ClientOnly; } }
 
+        #region Control
         public static bool Start(EngineConfiguration configuration)
         {
-            Engine.shutdownRequested = false;
-            Engine.hasShutdown = false;
-
+            ShutdownRequested = false;
             Log = new LogDispatcher();
+
+            // Always send log messages to stdout.
             Log.RegisterReceiver(new ConsoleLogWriter());
 
             // Ensure the current platform is supported.
@@ -53,8 +52,14 @@ namespace DarkTech.Engine
                 return false;
             }
 
-            if (!Initialize(configuration))
+            try
             {
+                Initialize(configuration);
+            }
+            catch (InitializeException e)
+            {
+                Log.WriteLine("error/system/startup", e.Message);
+
                 return false;
             }
 
@@ -66,77 +71,54 @@ namespace DarkTech.Engine
 
         public static void RequestShutdown()
         {
-            if (shutdownRequested)
-                return;
-
-            shutdownRequested = true;
+            ShutdownRequested = true;
         }
+        #endregion
 
         #region Initialize
-        private static bool Initialize(EngineConfiguration configuration)
+        private static void Initialize(EngineConfiguration configuration)
         {
-            // Create scripting interface.
+            // Create the scripting interface first so any other component can register their cvars/commands.
             ScriptingInterface = SystemFactory.CreateScriptingInterface();
 
-            // Register cvars and commands.
+            // Register cvars/commands that are required by the engine.
             RegisterCvars(configuration);
             RegisterCommands();
 
-            // Create remaining systems.
+            // Create the file system now so that the client/server dlls can be loaded.
             FileSystem = SystemFactory.CreateFileSystem();
+
+            if (HasServer)
+            {
+                server = LoadDLL<IServer>("fs_server");
+
+                server.Initialize();
+            }
+
+            if (HasClient)
+            {
+                client = LoadDLL<IClient>("fs_client");
+
+                client.Initialize();
+            }
+
             ResourceManager = SystemFactory.CreateResourceManager();
             SoundSystem = SystemFactory.CreateSoundSystem();
             Window = SystemFactory.CreateWindow();
             Renderer = SystemFactory.CreateRenderer();
             Timer = SystemFactory.CreateTimer();
 
-            if (!Timer.Initialize())
-            {
-                Log.WriteLine("error/system/startup", "Failed to initialize timer");
-
-                return false;
-            }
-
             if (HasServer)
             {
-                if (!LoadServer())
-                {
-                    return false;
-                }
+                server.Load();
             }
 
             if (HasClient)
             {
-                // Create the window, but do not show it yet.
-                try
-                {
-                    Window.Create();
-                }
-                catch (WindowException e)
-                {
-                    Log.WriteLine("error/system/startup", "Failed to create window: {0}", e.Message);
-                    return false;
-                }
-
-                // Initialize the renderer which will create a graphics context that
-                // is required for loading the client.
-                if (!Renderer.Initialize())
-                {
-                    return false;
-                }
-
-                if (!LoadClient())
-                {
-                    return false;
-                }
-
-                if (!SoundSystem.Initialize())
-                {
-                    return false;
-                }
+                Renderer.Initialize();
+                client.Load();
+                SoundSystem.Initialize();
             }
-
-            return true;
         }
 
         private static void RegisterCvars(EngineConfiguration configuration)
@@ -220,50 +202,17 @@ namespace DarkTech.Engine
             ScriptingInterface.RegisterCommand("snd_restart", "Restart the sound system", false, snd_restart);
         }
 
-        private static bool LoadServer()
+        private static T LoadDLL<T>(string pathCvar)
         {
-            string serverPath = ScriptingInterface.GetCvarValue<string>("fs_server");
+            string dllPath = ScriptingInterface.GetCvarValue<string>(pathCvar);
+            T result;
 
-            if (!AssemblyUtils.LoadType<IServer>(serverPath, out server))
+            if (!AssemblyUtils.LoadType<T>(dllPath, out result))
             {
-                return false;
+                throw new InitializeException("Failed to load dll {0}", dllPath);
             }
 
-            if (server.Initialize())
-            {
-                Log.WriteLine("info/system/startup", "Server DLL {0} - {1} version {2} initialized successfully", server.Name, server.Author, server.Version);
-
-                return true;
-            }
-            else
-            {
-                Log.WriteLine("error/system/startup", "Server DLL failed to initialize");
-
-                return false;
-            }
-        }
-
-        private static bool LoadClient()
-        {
-            string clientPath = ScriptingInterface.GetCvarValue<string>("fs_client");
-
-            if (!AssemblyUtils.LoadType<IClient>(clientPath, out client))
-            {
-                return false;
-            }
-
-            if (client.Initialize())
-            {
-                Log.WriteLine("info/system/startup", "Client DLL {0} - {1} version {2} initialized successfully", client.Name, client.Author, client.Version);
-
-                return true;
-            }
-            else
-            {
-                Log.WriteLine("error/system/startup", "Client DLL failed to initialize");
-
-                return false;
-            }
+            return result;
         }
         #endregion
 
@@ -296,7 +245,7 @@ namespace DarkTech.Engine
             serverTimer = new DeltaTimer(Timer, tsServer);
             debugTimer = new DeltaTimer(Timer, tsDebug);
 
-            while (!shutdownRequested)
+            while (!ShutdownRequested)
             {
                 if (HasServer)
                 {
@@ -359,15 +308,6 @@ namespace DarkTech.Engine
         #region Shutdown
         private static void Shutdown()
         {
-            // Only run this cleanup method once.
-            if (hasShutdown)
-                return;
-
-            // Engine.FatalError will call this method directly regardless of the value of shutdownRequested.
-            // Make sure the value is true so all threads exit successfully.
-            if (!shutdownRequested)
-                shutdownRequested = true;
-
             // Dispose server and client.
             server.Dispose();
             client.Dispose();
@@ -379,8 +319,6 @@ namespace DarkTech.Engine
             Window.Destroy();
 
             Timer.Dispose();
-
-            hasShutdown = true;
         }
         #endregion
 

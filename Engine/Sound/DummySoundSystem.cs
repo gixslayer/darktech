@@ -2,7 +2,7 @@
 {
     internal sealed class DummySoundSystem : ISoundSystem
     {
-        public bool Initialize() { return true; }
+        public void Initialize() { }
         public void Start() { }
         public void Restart() { }
         public void Dispose() { }
